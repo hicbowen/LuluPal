@@ -21,9 +21,9 @@ Unicode true
 ####
 ## !define INFO_PROJECTNAME    "my-project" # Default "LuluDay"
 ## !define INFO_COMPANYNAME    "LuluDay" # Default comes from build/config.yml
-## !define INFO_PRODUCTNAME    "噜噜日" # Default comes from build/config.yml
+## !define INFO_PRODUCTNAME    "LuluDay" # Default comes from build/config.yml
 ## !define INFO_PRODUCTVERSION "1.0.0"     # Default "0.1.0"
-## !define INFO_COPYRIGHT      "© 2026 LuluDay" # Default comes from build/config.yml
+## !define INFO_COPYRIGHT      "(c) 2026 LuluDay" # Default comes from build/config.yml
 ###
 ## !define PRODUCT_EXECUTABLE  "Application.exe"      # Default "${INFO_PROJECTNAME}.exe"
 ## !define UNINST_KEY_NAME     "UninstKeyInRegistry"  # Default "${INFO_COMPANYNAME}${INFO_PRODUCTNAME}"

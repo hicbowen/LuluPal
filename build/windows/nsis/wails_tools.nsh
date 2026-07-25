@@ -11,13 +11,13 @@
     !define INFO_COMPANYNAME "LuluDay"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "噜噜日"
+    !define INFO_PRODUCTNAME "LuluDay"
 !endif
 !ifndef INFO_PRODUCTVERSION
     !define INFO_PRODUCTVERSION "0.1.0"
 !endif
 !ifndef INFO_COPYRIGHT
-    !define INFO_COPYRIGHT "© 2026 LuluDay"
+    !define INFO_COPYRIGHT "(c) 2026 LuluDay"
 !endif
 !ifndef PRODUCT_EXECUTABLE
     !define PRODUCT_EXECUTABLE "${INFO_PROJECTNAME}.exe"
