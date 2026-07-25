@@ -1,0 +1,100 @@
+nav button {
+  padding: 11px 13px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #796b5e;
+  text-align: left;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background: #f7efe2;
+}
+
+.panel input[type="time"] {
+  padding: 8px 10px;
+  border: 1px solid #ddd2c3;
+  border-radius: 9px;
+  background: #fbf8f2;
+}
+
+.panel input:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.setting-note {
+  padding: 15px 0;
+  border-top: 1px solid #f0ebe4;
+}
+
+.setting-note strong,
+.setting-note small {
+  display: block;
+}
+
+.position-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 0 12px;
+  border-top: 1px solid #f0ebe4;
+}
+
+.position-actions button {
+  padding: 9px 13px;
+  border: 1px solid #e98435;
+  border-radius: 9px;
+  background: #e98435;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.position-actions button.secondary {
+  background: #fffaf2;
+  color: #c8641d;
+}
+
+.message-categories {
+  padding: 15px 0;
+  border-top: 1px solid #f0ebe4;
+}
+
+.message-categories > span strong,
+.message-categories > span small {
+  display: block;
+}
+
+.message-categories > span small {
+  margin-top: 4px;
+  color: #9a8d80;
+}
+
+.message-categories > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.message-categories button {
+  padding: 6px 10px;
+  border: 1px solid #ddd2c3;
+  border-radius: 999px;
+  background: #fbf8f2;
+  color: #796b5e;
+  cursor: pointer;
+}
+
+.message-categories button.selected {
+  border-color: #e98435;
+  background: #fff0e3;
+  color: #d76e20;
+  font-weight: 700;
+}
+
+.setting-note small {
+  margin-top: 5px;
+  color: #9a8d80;
+}

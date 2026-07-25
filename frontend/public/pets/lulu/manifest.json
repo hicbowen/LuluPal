@@ -1,0 +1,52 @@
+{
+  "id": "lulu",
+  "name": "噜噜",
+  "defaultScale": 1,
+  "anchor": { "x": 0.5, "y": 1 },
+  "animations": {
+    "idle": {
+      "frames": ["animations/idle/001.png", "animations/idle/002.png", "animations/idle/003.png", "animations/idle/004.png"],
+      "durations": [700, 220, 180, 500], "loop": true
+    },
+    "blink": {
+      "frames": ["animations/idle/001.png", "animations/idle/003.png", "animations/idle/001.png"],
+      "durations": [100, 160, 100], "loop": false
+    },
+    "walk": {
+      "frames": [
+        "animations/walk-v4/001.png",
+        "animations/walk-v4/003.png",
+        "animations/walk-v4/005.png",
+        "animations/walk-v4/007.png",
+        "animations/walk-v4/005.png",
+        "animations/walk-v4/003.png"
+      ],
+      "durations": [170, 165, 160, 170, 160, 165],
+      "loop": true
+    },
+    "jump": {
+      "frames": ["animations/jump/001.png", "animations/jump/002.png", "animations/jump/003.png", "animations/jump/004.png", "animations/jump/005.png", "animations/jump/006.png"],
+      "durations": [160, 120, 120, 180, 120, 180], "loop": false
+    },
+    "sleepEnter": {
+      "frames": ["animations/sleep/001.png", "animations/sleep/002.png", "animations/sleep/003.png"],
+      "durations": [500, 450, 500], "loop": false
+    },
+    "sleep": {
+      "frames": ["animations/sleep/003.png", "animations/sleep/004.png"],
+      "durations": [900, 900], "loop": true
+    },
+    "wake": {
+      "frames": ["animations/sleep/004.png", "animations/sleep/003.png", "animations/sleep/002.png", "animations/sleep/001.png"],
+      "durations": [180, 180, 220, 250], "loop": false
+    },
+    "petting": {"frames": ["animations/actions/001.png"], "durations": [800], "loop": false},
+    "clicked": {"frames": ["animations/actions/002.png"], "durations": [650], "loop": false},
+    "dragged": {"frames": ["animations/actions/003.png"], "durations": [500], "loop": true},
+    "speaking": {"frames": ["animations/actions/004.png"], "durations": [500], "loop": true},
+    "celebrate": {"frames": ["animations/actions/005.png", "animations/jump/002.png", "animations/actions/005.png", "animations/jump/006.png"], "durations": [180, 160, 180, 200], "loop": false},
+    "sad": {"frames": ["animations/actions/006.png"], "durations": [900], "loop": false}
+  },
+  "assetVersion": "0.4.1-ping-pong-walk-cycle",
+  "reference": "reference/character-reference.jpg"
+}

@@ -1,0 +1,36 @@
+{
+  "source": "frontend/public/pets/lulu/sheets/idle.png",
+  "columns": 2,
+  "rows": 2,
+  "frameSize": [
+    370,
+    588
+  ],
+  "frames": 4,
+  "sourceBoxes": [
+    [
+      161,
+      27,
+      506,
+      589
+    ],
+    [
+      121,
+      25,
+      466,
+      588
+    ],
+    [
+      161,
+      20,
+      505,
+      582
+    ],
+    [
+      120,
+      18,
+      466,
+      582
+    ]
+  ]
+}

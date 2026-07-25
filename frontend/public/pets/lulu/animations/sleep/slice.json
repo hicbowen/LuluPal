@@ -1,0 +1,36 @@
+{
+  "source": "frontend/public/pets/lulu/sheets/sleep.png",
+  "columns": 2,
+  "rows": 2,
+  "frameSize": [
+    530,
+    567
+  ],
+  "frames": 4,
+  "sourceBoxes": [
+    [
+      112,
+      65,
+      483,
+      608
+    ],
+    [
+      30,
+      168,
+      530,
+      586
+    ],
+    [
+      47,
+      108,
+      553,
+      502
+    ],
+    [
+      33,
+      118,
+      538,
+      506
+    ]
+  ]
+}

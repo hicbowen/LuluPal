@@ -1,0 +1,42 @@
+.weekday-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #f0ebe4;
+}
+
+.weekday-setting > span strong {
+  display: block;
+}
+
+.weekday-setting small {
+  display: block;
+  margin-top: 4px;
+  color: #9a8d80;
+}
+
+.weekday-picker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 310px;
+}
+
+.weekday-picker button {
+  padding: 6px 9px;
+  border: 1px solid #ddd2c3;
+  border-radius: 8px;
+  background: #fbf8f2;
+  color: #796b5e;
+  cursor: pointer;
+}
+
+.weekday-picker button.selected {
+  border-color: #e98435;
+  background: #fff0e3;
+  color: #d76e20;
+  font-weight: 700;
+}
