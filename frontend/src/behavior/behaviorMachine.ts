@@ -1,5 +1,5 @@
 export type PetState =
-  | 'idle' | 'walk' | 'jump' | 'sleepEnter' | 'sleep' | 'wake' | 'speaking'
+  | 'idle' | 'walk' | 'jump' | 'sleepEnter' | 'sleep' | 'wake' | 'speaking' | 'singing'
   | 'petting' | 'clicked' | 'dragged' | 'celebrate' | 'sad'
   | 'paused' | 'hidden'
 
@@ -10,17 +10,26 @@ export type BehaviorEvent =
   | { type: 'DRAG_START' }
   | { type: 'DRAG_END' }
   | { type: 'SPEAK' }
+  | { type: 'SLEEP' }
   | { type: 'CELEBRATE' }
+  | { type: 'SINGING_START' }
+  | { type: 'SINGING_STOP' }
   | { type: 'COMPLETE' }
   | { type: 'PAUSE'; enabled: boolean }
 
 const priority: Record<PetState, number> = {
-  hidden: 100, paused: 90, celebrate: 80, dragged: 70,
+  hidden: 100, paused: 90, singing: 85, celebrate: 80, dragged: 70,
   wake: 65, petting: 60, clicked: 60, speaking: 50,
   jump: 40, walk: 30, sleepEnter: 20, sleep: 20, sad: 15, idle: 10,
 }
 
 export function transition(current: PetState, event: BehaviorEvent): PetState {
+  if (event.type === 'SINGING_START') return 'singing'
+  if (event.type === 'SINGING_STOP') return current === 'singing' ? 'idle' : current
+  if (event.type === 'SLEEP') return 'sleepEnter'
+  // Singing is an externally owned state. Only the playback lifecycle may
+  // release it, so random/click/sleep timers cannot interrupt a song.
+  if (current === 'singing') return current
   if (event.type === 'PAUSE') return event.enabled ? 'paused' : 'idle'
   if (current === 'paused' || current === 'hidden') return current
   if (event.type === 'DRAG_START') return 'dragged'

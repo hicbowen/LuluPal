@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Events } from '@wailsio/runtime'
 import { AppService } from '../bindings/luluday'
 import { AnimationPlayer, PetManifest } from './animation/AnimationPlayer'
 import { usePetBehavior } from './behavior/usePetBehavior'
+import { useSPlayerLyrics } from './splayer/useSPlayerLyrics'
 import {
   MessageCategory, messageCategoryLabels, selectPetMessage,
 } from './messages/petMessages'
 import './app.css'
+import './karaoke.css'
 import './weekday.css'
 import './settings-tabs.css'
 
@@ -24,6 +26,7 @@ type Config = {
 }
 type Countdown = { calendarDays: number; workingDays: number; isTargetDay: boolean; isExpired: boolean; daysAfterTarget: number }
 type SettingsSection = 'countdown' | 'pet' | 'bubble' | 'system'
+const SINGING_PAUSE_GRACE_MS = 10_000
 
 const fallback: Config = {
   version: 2, targetDate: '', countdownMode: 'calendar', restWeekdays: [0, 6], includeToday: false,
@@ -98,6 +101,7 @@ function PetWindow() {
   const [manifest, setManifest] = useState<PetManifest>()
   const [direction, setDirection] = useState<'left'|'right'>('right')
   const { state, dispatch } = usePetBehavior(config.sleepDurationSeconds * 1000)
+  const splayer = useSPlayerLyrics()
   const dragged = useRef(false)
   const bubbleTimer = useRef<number>()
   const showBubble = useCallback((category?: MessageCategory) => {
@@ -158,14 +162,34 @@ function PetWindow() {
     const motionDirection = Events.On('motion:direction', event => {
       setDirection(event.data === 'left' ? 'left' : 'right')
     })
+    const sleep = Events.On('pet:sleep', () => {
+      hideBubble()
+      dispatch({ type: 'SLEEP' })
+    })
     return () => {
       window.clearTimeout(dragRecoveryTimer)
-      off(); dragStart(); dragEnd(); misclassifiedDragEnd(); moved(); motionDirection()
+      off(); dragStart(); dragEnd(); misclassifiedDragEnd(); moved(); motionDirection(); sleep()
     }
   }, [])
   useEffect(() => {
     if (result?.isTargetDay) dispatch({ type: 'CELEBRATE' })
   }, [result?.isTargetDay])
+  useEffect(() => {
+    if (!splayer.connected) {
+      dispatch({ type: 'SINGING_STOP' })
+      return
+    }
+    if (splayer.playing) {
+      dispatch({ type: 'SINGING_START' })
+      hideBubble()
+      return
+    }
+    const timer = window.setTimeout(
+      () => dispatch({ type: 'SINGING_STOP' }),
+      SINGING_PAUSE_GRACE_MS,
+    )
+    return () => window.clearTimeout(timer)
+  }, [dispatch, hideBubble, splayer.connected, splayer.playing])
   useEffect(() => {
     if (state === 'speaking') showBubble()
     if (state === 'sleepEnter') showBubble('sleep')
@@ -219,10 +243,25 @@ function PetWindow() {
   }
   const animationComplete = useCallback(() => dispatch({ type: 'COMPLETE' }), [dispatch])
   const bubbleBottom = Math.min(290, 12 + 245 * config.petScale + 8)
+  const showingSPlayer = splayer.connected && state === 'singing'
+  const visibleBubble = showingSPlayer ? Boolean(splayer.text) : config.bubbleEnabled && bubble
+  const visibleBubbleText = showingSPlayer ? splayer.text : bubbleText
+  const animation = state === 'singing' && (!splayer.playing || !splayer.text) ? 'singingIdle' : state
   return <main className="pet-stage" onDoubleClick={pet}>
-    {config.bubbleEnabled && bubble && <button className="speech" style={{ bottom: bubbleBottom, top: 'auto' }} onClick={hideBubble}>{bubbleText}<span>×</span></button>}
+    {visibleBubble && <button className="speech" style={{ bottom: bubbleBottom, top: 'auto' }} onClick={showingSPlayer ? undefined : hideBubble}>
+      {showingSPlayer && splayer.words
+        ? <span className="karaoke-line">{splayer.words.map((word, index) =>
+          <span
+            className="karaoke-word"
+            key={`${index}-${word.text}`}
+            style={{ '--karaoke-progress': `${word.progress * 100}%` } as CSSProperties}
+          >{word.text}</span>,
+        )}</span>
+        : visibleBubbleText}
+      {!showingSPlayer && <span>×</span>}
+    </button>}
     <div className="pet" style={{ transform: `scale(${config.petScale})` }} onClick={click}>
-      {manifest && <AnimationPlayer manifest={manifest} animation={state} flip={state === 'walk' && direction === 'right'} onComplete={animationComplete}/>}
+      {manifest && <AnimationPlayer manifest={manifest} animation={animation} flip={state === 'walk' && direction === 'right'} onComplete={animationComplete}/>}
     </div>
   </main>
 }

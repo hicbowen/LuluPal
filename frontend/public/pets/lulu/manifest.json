@@ -44,6 +44,21 @@
     "clicked": {"frames": ["animations/actions/002.png"], "durations": [650], "loop": false},
     "dragged": {"frames": ["animations/actions/003.png"], "durations": [500], "loop": true},
     "speaking": {"frames": ["animations/actions/004.png"], "durations": [500], "loop": true},
+    "singingIdle": {
+      "frames": ["animations/singing/001.png"],
+      "durations": [1000], "loop": true
+    },
+    "singing": {
+      "frames": [
+        "animations/singing/001.png",
+        "animations/singing/002.png",
+        "animations/singing/003.png",
+        "animations/singing/004.png",
+        "animations/singing/005.png",
+        "animations/singing/006.png"
+      ],
+      "durations": [190, 160, 170, 190, 170, 190], "loop": true
+    },
     "celebrate": {"frames": ["animations/actions/005.png", "animations/jump/002.png", "animations/actions/005.png", "animations/jump/006.png"], "durations": [180, 160, 180, 200], "loop": false},
     "sad": {"frames": ["animations/actions/006.png"], "durations": [900], "loop": false}
   },

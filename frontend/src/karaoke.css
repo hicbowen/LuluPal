@@ -1,0 +1,17 @@
+.speech .karaoke-line {
+  position: static;
+  display: inline;
+  color: inherit;
+}
+
+.speech .karaoke-word {
+  position: static;
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    #514135 0 var(--karaoke-progress),
+    #b7a99a var(--karaoke-progress) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}

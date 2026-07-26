@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"luluday/internal/autostart"
 	"luluday/internal/config"
 	"luluday/internal/pet"
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 //go:embed all:frontend/dist
@@ -90,6 +90,10 @@ func main() {
 	})
 	menu.Add("打开设置").OnClick(func(*application.Context) {
 		settingsWindow.Show().Focus()
+	})
+	menu.Add("让噜噜睡觉").OnClick(func(*application.Context) {
+		service.StopMotion()
+		app.Event.Emit("pet:sleep")
 	})
 	menu.AddSeparator()
 	menu.Add("退出噜噜日").OnClick(func(*application.Context) {
