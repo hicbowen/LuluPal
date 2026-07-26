@@ -96,3 +96,22 @@ func TestActivityBoundsAccountsForPetScale(t *testing.T) {
 		t.Fatalf("scaled edge bleed = (%d, %d, %d), want (-135, -87, -17)", tinyMinX, smallMinX, largeMinX)
 	}
 }
+
+func TestWindowSizeForScale(t *testing.T) {
+	tests := []struct {
+		scale         float64
+		width, height int
+	}{
+		{0.3, 230, 190},
+		{0.5, 230, 238},
+		{1, 276, 360},
+		{1.3, 347, 434},
+		{0, 276, 360},
+	}
+	for _, test := range tests {
+		width, height := WindowSizeForScale(test.scale)
+		if width != test.width || height != test.height {
+			t.Fatalf("WindowSizeForScale(%v) = (%d, %d), want (%d, %d)", test.scale, width, height, test.width, test.height)
+		}
+	}
+}

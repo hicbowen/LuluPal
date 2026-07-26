@@ -37,6 +37,7 @@ func main() {
 
 	var app *application.App
 	var petWindow *application.WebviewWindow
+	petWindowWidth, petWindowHeight := pet.WindowSizeForScale(current.PetScale)
 	service := NewAppService(store, func(updated config.Config) {
 		if petWindow != nil {
 			petWindow.SetAlwaysOnTop(updated.AlwaysOnTop)
@@ -52,7 +53,7 @@ func main() {
 	})
 
 	petWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Name: "pet", Title: "噜噜", Width: 360, Height: 360,
+		Name: "pet", Title: "噜噜", Width: petWindowWidth, Height: petWindowHeight,
 		URL: "/?window=pet", Frameless: true, DisableResize: true,
 		AlwaysOnTop:      current.AlwaysOnTop,
 		BackgroundType:   application.BackgroundTypeTransparent,

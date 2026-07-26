@@ -178,7 +178,43 @@ func (c *MotionController) runJump(height float64, duration time.Duration, cance
 const (
 	jumpTakeoffProgress = 0.16
 	jumpLandingProgress = 0.82
+	petContentWidth     = 236
+	petContentHeight    = 245
+	petWindowMinWidth   = 230
+	petWindowMinHeight  = 190
+	petWindowPaddingX   = 40
+	petWindowPaddingY   = 115
 )
+
+func WindowSizeForScale(scale float64) (width, height int) {
+	if scale < 0.3 || scale > 1.3 {
+		scale = 1
+	}
+	width = int(math.Round(petContentWidth*scale)) + petWindowPaddingX
+	height = int(math.Round(petContentHeight*scale)) + petWindowPaddingY
+	if width < petWindowMinWidth {
+		width = petWindowMinWidth
+	}
+	if height < petWindowMinHeight {
+		height = petWindowMinHeight
+	}
+	return
+}
+
+// ResizeForScale keeps the pet's bottom-centre anchored while changing the
+// native window size, so the character does not jump when its scale changes.
+func (c *MotionController) ResizeForScale(scale float64) {
+	newWidth, newHeight := WindowSizeForScale(scale)
+	bounds := c.window.Bounds()
+	if bounds.Width == newWidth && bounds.Height == newHeight {
+		return
+	}
+	x, y := c.window.Position()
+	newX := x + (bounds.Width-newWidth)/2
+	newY := y + bounds.Height - newHeight
+	c.window.SetSize(newWidth, newHeight)
+	c.window.SetPosition(newX, newY)
+}
 
 func JumpMotionOffset(progress, height float64) float64 {
 	if progress <= jumpTakeoffProgress || progress >= 1 || height <= 0 {

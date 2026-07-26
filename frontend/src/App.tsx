@@ -8,6 +8,7 @@ import {
   MessageCategory, messageCategoryLabels, selectPetMessage,
 } from './messages/petMessages'
 import './app.css'
+import './pet-window.css'
 import './karaoke.css'
 import './weekday.css'
 import './settings-tabs.css'
@@ -242,7 +243,7 @@ function PetWindow() {
     showBubble('petting')
   }
   const animationComplete = useCallback(() => dispatch({ type: 'COMPLETE' }), [dispatch])
-  const bubbleBottom = Math.min(290, 12 + 245 * config.petScale + 8)
+  const bubbleBottom = 12 + 245 * config.petScale + 8
   const showingSPlayer = splayer.connected && state === 'singing'
   const visibleBubble = showingSPlayer ? Boolean(splayer.text) : config.bubbleEnabled && bubble
   const visibleBubbleText = showingSPlayer ? splayer.text : bubbleText
@@ -260,7 +261,7 @@ function PetWindow() {
         : visibleBubbleText}
       {!showingSPlayer && <span>×</span>}
     </button>}
-    <div className="pet" style={{ transform: `scale(${config.petScale})` }} onClick={click}>
+    <div className="pet" style={{ transform: `translateX(-50%) scale(${config.petScale})` }} onClick={click}>
       {manifest && <AnimationPlayer manifest={manifest} animation={animation} flip={state === 'walk' && direction === 'right'} onComplete={animationComplete}/>}
     </div>
   </main>

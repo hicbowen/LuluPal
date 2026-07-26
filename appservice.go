@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"luluday/internal/autostart"
 	"luluday/internal/config"
 	"luluday/internal/countdown"
 	"luluday/internal/pet"
-	"fmt"
 	"time"
 )
 
@@ -22,6 +22,7 @@ func (s *AppService) SetMotionController(controller *pet.MotionController) {
 	s.motion = controller
 	current := s.store.Get()
 	controller.ConfigureActivityArea(current.ActivityArea, current.BottomMargin, current.PetScale)
+	controller.ResizeForScale(current.PetScale)
 	controller.ConstrainNow()
 }
 func (s *AppService) StartMotion(direction string, speed float64, durationMS int) {
@@ -51,7 +52,9 @@ func (s *AppService) SaveConfig(v config.Config) error {
 		return err
 	}
 	if s.motion != nil {
+		s.motion.Stop()
 		s.motion.ConfigureActivityArea(v.ActivityArea, v.BottomMargin, v.PetScale)
+		s.motion.ResizeForScale(v.PetScale)
 		s.motion.ConstrainNow()
 	}
 	if s.onChange != nil {

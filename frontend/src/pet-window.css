@@ -1,0 +1,8 @@
+.pet-stage .speech {
+  max-width: calc(100vw - 16px);
+  min-width: min(210px, calc(100vw - 16px));
+}
+
+.pet-stage .pet {
+  left: 50%;
+}
