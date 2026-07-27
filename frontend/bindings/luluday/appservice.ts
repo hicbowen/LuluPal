@@ -47,6 +47,10 @@ export function SetMotionController(controller: pet$0.MotionController | null): 
     return $Call.ByID(2010155752, controller);
 }
 
+export function SetPetBubbleMode(mode: string): $CancellablePromise<void> {
+    return $Call.ByID(2358137650, mode);
+}
+
 export function StartJump(height: number, durationMS: number): $CancellablePromise<void> {
     return $Call.ByID(1371770762, height, durationMS);
 }

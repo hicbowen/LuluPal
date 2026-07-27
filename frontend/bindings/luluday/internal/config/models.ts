@@ -20,7 +20,17 @@ export interface Config {
     "bubbleDisplaySeconds": number;
     "bubbleCategories": { [_ in string]?: boolean } | null;
     "quietHours": QuietHours;
+    "healthReminders": HealthReminders;
     "position": Position;
+}
+
+export interface HealthReminders {
+    "enabled": boolean;
+    "waterEnabled": boolean;
+    "waterIntervalMinutes": number;
+    "standEnabled": boolean;
+    "standIntervalMinutes": number;
+    "snoozeMinutes": number;
 }
 
 export interface Position {

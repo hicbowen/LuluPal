@@ -1,8 +1,58 @@
 .pet-stage .speech {
   max-width: calc(100vw - 16px);
   min-width: min(210px, calc(100vw - 16px));
+  box-shadow: none;
+  filter:
+    drop-shadow(0 2px 3px rgb(82 58 39 / 10%))
+    drop-shadow(0 8px 14px rgb(82 58 39 / 14%));
 }
 
 .pet-stage .pet {
   left: 50%;
+}
+
+.speech-action {
+  width: min(330px, calc(100vw - 16px));
+  padding: 16px;
+  background: #f4fff5;
+  border: 1px solid #d9eed8;
+  cursor: default;
+}
+
+.speech-action::after {
+  border-top-color: #f4fff5;
+}
+
+.health-copy {
+  line-height: 1.45;
+}
+
+.health-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.health-actions button {
+  --wails-draggable: no-drag;
+  padding: 7px 11px;
+  border: 1px solid #68a769;
+  border-radius: 999px;
+  background: #68a769;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.health-actions button.secondary {
+  background: white;
+  color: #4f8e52;
+}
+
+.health-actions button.quiet {
+  border-color: transparent;
+  background: transparent;
+  color: #849281;
 }

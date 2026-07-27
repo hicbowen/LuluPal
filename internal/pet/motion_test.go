@@ -102,16 +102,33 @@ func TestWindowSizeForScale(t *testing.T) {
 		scale         float64
 		width, height int
 	}{
-		{0.3, 230, 190},
-		{0.5, 230, 238},
-		{1, 276, 360},
-		{1.3, 347, 434},
-		{0, 276, 360},
+		{0.3, 96, 98},
+		{0.5, 142, 147},
+		{1, 260, 269},
+		{1.3, 331, 343},
+		{0, 260, 269},
 	}
 	for _, test := range tests {
 		width, height := WindowSizeForScale(test.scale)
 		if width != test.width || height != test.height {
 			t.Fatalf("WindowSizeForScale(%v) = (%d, %d), want (%d, %d)", test.scale, width, height, test.width, test.height)
+		}
+	}
+}
+
+func TestWindowSizeForBubbleContent(t *testing.T) {
+	tests := []struct {
+		mode          string
+		width, height int
+	}{
+		{"none", 260, 269},
+		{"normal", 316, 369},
+		{"action", 346, 479},
+	}
+	for _, test := range tests {
+		width, height := WindowSizeForContent(1, test.mode)
+		if width != test.width || height != test.height {
+			t.Fatalf("WindowSizeForContent(1, %q) = (%d, %d), want (%d, %d)", test.mode, width, height, test.width, test.height)
 		}
 	}
 }

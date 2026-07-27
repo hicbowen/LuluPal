@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const CurrentVersion = 5
+const CurrentVersion = 6
 
 type QuietHours struct {
 	Enabled bool   `json:"enabled"`
@@ -19,6 +19,14 @@ type Position struct {
 	DisplayID string `json:"displayId"`
 	X         int    `json:"x"`
 	Y         int    `json:"y"`
+}
+type HealthReminders struct {
+	Enabled              bool `json:"enabled"`
+	WaterEnabled         bool `json:"waterEnabled"`
+	WaterIntervalMinutes int  `json:"waterIntervalMinutes"`
+	StandEnabled         bool `json:"standEnabled"`
+	StandIntervalMinutes int  `json:"standIntervalMinutes"`
+	SnoozeMinutes        int  `json:"snoozeMinutes"`
 }
 type Config struct {
 	Version              int             `json:"version"`
@@ -39,11 +47,16 @@ type Config struct {
 	BubbleDisplaySeconds int             `json:"bubbleDisplaySeconds"`
 	BubbleCategories     map[string]bool `json:"bubbleCategories"`
 	QuietHours           QuietHours      `json:"quietHours"`
+	HealthReminders      HealthReminders `json:"healthReminders"`
 	Position             Position        `json:"position"`
 }
 
 func Default() Config {
-	return Config{Version: CurrentVersion, CountdownMode: "calendar", RestWeekdays: []int{0, 6}, IncludeTargetDate: true, PetScale: 1, ActivityArea: "bottom", BottomMargin: 12, SleepDurationSeconds: 30, AlwaysOnTop: true, BubbleEnabled: true, BubbleIntervalMin: 20, BubbleIntervalMax: 45, BubbleDisplaySeconds: 7, BubbleCategories: defaultBubbleCategories(), QuietHours: QuietHours{Enabled: true, Start: "22:00", End: "08:00"}}
+	return Config{Version: CurrentVersion, CountdownMode: "calendar", RestWeekdays: []int{0, 6}, IncludeTargetDate: true, PetScale: 1, ActivityArea: "bottom", BottomMargin: 12, SleepDurationSeconds: 30, AlwaysOnTop: true, BubbleEnabled: true, BubbleIntervalMin: 20, BubbleIntervalMax: 45, BubbleDisplaySeconds: 7, BubbleCategories: defaultBubbleCategories(), QuietHours: QuietHours{Enabled: true, Start: "22:00", End: "08:00"}, HealthReminders: defaultHealthReminders()}
+}
+
+func defaultHealthReminders() HealthReminders {
+	return HealthReminders{Enabled: true, WaterEnabled: true, WaterIntervalMinutes: 60, StandEnabled: true, StandIntervalMinutes: 50, SnoozeMinutes: 10}
 }
 
 func defaultBubbleCategories() map[string]bool {
@@ -138,11 +151,32 @@ func migrate(v Config) Config {
 	if oldVersion < 5 {
 		v.SleepDurationSeconds = d.SleepDurationSeconds
 	}
+	if oldVersion < 6 {
+		v.HealthReminders = d.HealthReminders
+	}
 	if v.SleepDurationSeconds < 5 {
 		v.SleepDurationSeconds = 5
 	}
 	if v.SleepDurationSeconds > 300 {
 		v.SleepDurationSeconds = 300
+	}
+	if v.HealthReminders.WaterIntervalMinutes < 15 {
+		v.HealthReminders.WaterIntervalMinutes = 15
+	}
+	if v.HealthReminders.WaterIntervalMinutes > 240 {
+		v.HealthReminders.WaterIntervalMinutes = 240
+	}
+	if v.HealthReminders.StandIntervalMinutes < 15 {
+		v.HealthReminders.StandIntervalMinutes = 15
+	}
+	if v.HealthReminders.StandIntervalMinutes > 180 {
+		v.HealthReminders.StandIntervalMinutes = 180
+	}
+	if v.HealthReminders.SnoozeMinutes < 5 {
+		v.HealthReminders.SnoozeMinutes = 5
+	}
+	if v.HealthReminders.SnoozeMinutes > 60 {
+		v.HealthReminders.SnoozeMinutes = 60
 	}
 	if v.BubbleCategories == nil {
 		v.BubbleCategories = map[string]bool{}

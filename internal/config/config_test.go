@@ -80,6 +80,20 @@ func TestVersionFourConfigGetsLongerDefaultSleep(t *testing.T) {
 	}
 }
 
+func TestVersionFiveConfigGetsHealthReminderDefaults(t *testing.T) {
+	p := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(p, []byte(`{"version":5,"countdownMode":"calendar","petScale":1,"activityArea":"bottom","sleepDurationSeconds":30}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := NewStore(p).Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !got.HealthReminders.Enabled || !got.HealthReminders.WaterEnabled || got.HealthReminders.WaterIntervalMinutes != 60 {
+		t.Fatalf("health reminders = %+v", got.HealthReminders)
+	}
+}
+
 func TestCorruptBackup(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "config.json")
 	if err := os.WriteFile(p, []byte("{broken"), 0o600); err != nil {

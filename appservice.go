@@ -40,6 +40,12 @@ func (s *AppService) StopMotion() {
 		s.motion.Stop()
 	}
 }
+func (s *AppService) SetPetBubbleMode(mode string) {
+	if s.motion != nil {
+		s.motion.Stop()
+		s.motion.SetBubbleMode(mode)
+	}
+}
 func (s *AppService) GetConfig() config.Config { return s.store.Get() }
 func (s *AppService) SaveConfig(v config.Config) error {
 	current := s.store.Get()

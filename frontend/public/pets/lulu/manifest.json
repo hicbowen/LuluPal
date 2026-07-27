@@ -59,6 +59,40 @@
       ],
       "durations": [190, 160, 170, 190, 170, 190], "loop": true
     },
+    "drink": {
+      "frames": [
+        "animations/drink/001.png",
+        "animations/drink/002.png",
+        "animations/drink/003.png",
+        "animations/drink/004.png",
+        "animations/drink/005.png",
+        "animations/drink/006.png",
+        "animations/drink/007.png",
+        "animations/drink/008.png",
+        "animations/drink/009.png",
+        "animations/drink/010.png",
+        "animations/drink/011.png",
+        "animations/drink/012.png"
+      ],
+      "durations": [150, 150, 140, 140, 180, 180, 180, 180, 150, 150, 180, 220], "loop": false
+    },
+    "stretch": {
+      "frames": [
+        "animations/stretch/001.png",
+        "animations/stretch/002.png",
+        "animations/stretch/003.png",
+        "animations/stretch/004.png",
+        "animations/stretch/005.png",
+        "animations/stretch/006.png",
+        "animations/stretch/007.png",
+        "animations/stretch/008.png",
+        "animations/stretch/009.png",
+        "animations/stretch/010.png",
+        "animations/stretch/011.png",
+        "animations/stretch/012.png"
+      ],
+      "durations": [180, 140, 140, 140, 180, 140, 140, 140, 140, 140, 160, 220], "loop": false
+    },
     "celebrate": {"frames": ["animations/actions/005.png", "animations/jump/002.png", "animations/actions/005.png", "animations/jump/006.png"], "durations": [180, 160, 180, 200], "loop": false},
     "sad": {"frames": ["animations/actions/006.png"], "durations": [900], "loop": false}
   },

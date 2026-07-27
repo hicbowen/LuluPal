@@ -15,14 +15,15 @@ type MotionRequest struct {
 }
 
 type MotionController struct {
-	window *application.WebviewWindow
-	emit   func(string, any)
-	mu     sync.Mutex
-	cancel chan struct{}
-	done   chan struct{}
-	area   string
-	margin int
-	scale  float64
+	window     *application.WebviewWindow
+	emit       func(string, any)
+	mu         sync.Mutex
+	cancel     chan struct{}
+	done       chan struct{}
+	area       string
+	margin     int
+	scale      float64
+	bubbleMode string
 }
 
 func NewMotionController(window *application.WebviewWindow, emit func(string, any)) *MotionController {
@@ -180,13 +181,21 @@ const (
 	jumpLandingProgress = 0.82
 	petContentWidth     = 236
 	petContentHeight    = 245
-	petWindowMinWidth   = 230
-	petWindowMinHeight  = 190
-	petWindowPaddingX   = 40
-	petWindowPaddingY   = 115
+	petWindowMinWidth   = 96
+	petWindowMinHeight  = 98
+	petWindowPaddingX   = 24
+	petWindowPaddingY   = 24
+	normalBubbleWidth   = 316
+	normalBubbleHeight  = 100
+	actionBubbleWidth   = 346
+	actionBubbleHeight  = 210
 )
 
 func WindowSizeForScale(scale float64) (width, height int) {
+	return WindowSizeForContent(scale, "none")
+}
+
+func WindowSizeForContent(scale float64, mode string) (width, height int) {
 	if scale < 0.3 || scale > 1.3 {
 		scale = 1
 	}
@@ -198,13 +207,28 @@ func WindowSizeForScale(scale float64) (width, height int) {
 	if height < petWindowMinHeight {
 		height = petWindowMinHeight
 	}
+	switch mode {
+	case "action":
+		if width < actionBubbleWidth {
+			width = actionBubbleWidth
+		}
+		height += actionBubbleHeight
+	case "normal":
+		if width < normalBubbleWidth {
+			width = normalBubbleWidth
+		}
+		height += normalBubbleHeight
+	}
 	return
 }
 
 // ResizeForScale keeps the pet's bottom-centre anchored while changing the
 // native window size, so the character does not jump when its scale changes.
 func (c *MotionController) ResizeForScale(scale float64) {
-	newWidth, newHeight := WindowSizeForScale(scale)
+	c.mu.Lock()
+	mode := c.bubbleMode
+	c.mu.Unlock()
+	newWidth, newHeight := WindowSizeForContent(scale, mode)
 	bounds := c.window.Bounds()
 	if bounds.Width == newWidth && bounds.Height == newHeight {
 		return
@@ -214,6 +238,22 @@ func (c *MotionController) ResizeForScale(scale float64) {
 	newY := y + bounds.Height - newHeight
 	c.window.SetSize(newWidth, newHeight)
 	c.window.SetPosition(newX, newY)
+}
+
+func (c *MotionController) SetBubbleMode(mode string) {
+	if mode != "normal" && mode != "action" {
+		mode = "none"
+	}
+	c.mu.Lock()
+	if c.bubbleMode == mode {
+		c.mu.Unlock()
+		return
+	}
+	c.bubbleMode = mode
+	scale := c.scale
+	c.mu.Unlock()
+	c.ResizeForScale(scale)
+	c.ConstrainNow()
 }
 
 func JumpMotionOffset(progress, height float64) float64 {
@@ -252,10 +292,12 @@ func ConstrainHorizontalRange(x float64, direction string, minX, maxX int) (floa
 
 func ActivityBounds(workArea application.Rect, windowWidth, windowHeight int, area string, margin int, petScale float64) (minX, maxX, y int) {
 	area, margin = normaliseActivityArea(area, margin)
-	// The 360px pet window has about 62px of transparent padding on each
-	// horizontal side. Let most of that padding cross the screen edge so the
-	// visible character sits roughly 10px from the physical work-area edge.
-	transparentEdgeBleed := int(math.Round(170 - 118*petScale))
+	// Let transparent horizontal padding cross the screen edge while keeping
+	// roughly 10px of the visible character inside the work area. This remains
+	// correct as the window expands and contracts around bubbles.
+	transparentEdgeBleed := int(math.Round(
+		(float64(windowWidth)-petContentWidth*petScale)/2 - 10,
+	))
 	if transparentEdgeBleed < 0 {
 		transparentEdgeBleed = 0
 	}

@@ -3,6 +3,7 @@
 
 export type {
     Config,
+    HealthReminders,
     Position,
     QuietHours
 } from "./models.js";

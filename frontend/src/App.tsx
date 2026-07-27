@@ -23,10 +23,18 @@ type Config = {
   bubbleIntervalMin: number; bubbleIntervalMax: number; bubbleDisplaySeconds: number
   bubbleCategories: Record<MessageCategory, boolean>
   quietHours: { enabled: boolean; start: string; end: string }
+  healthReminders: {
+    enabled: boolean
+    waterEnabled: boolean; waterIntervalMinutes: number
+    standEnabled: boolean; standIntervalMinutes: number
+    snoozeMinutes: number
+  }
   position: { displayId: string; x: number; y: number }
 }
 type Countdown = { calendarDays: number; workingDays: number; isTargetDay: boolean; isExpired: boolean; daysAfterTarget: number }
-type SettingsSection = 'countdown' | 'pet' | 'bubble' | 'system'
+type SettingsSection = 'countdown' | 'pet' | 'bubble' | 'health' | 'system'
+type HealthReminderKind = 'water' | 'stand'
+type HealthReminder = { id: string; kind: HealthReminderKind; text: string }
 const SINGING_PAUSE_GRACE_MS = 10_000
 
 const fallback: Config = {
@@ -41,6 +49,12 @@ const fallback: Config = {
     petting: true, click: true, sleep: true, special: true,
   },
   quietHours: { enabled: true, start: '22:00', end: '08:00' },
+  healthReminders: {
+    enabled: true,
+    waterEnabled: true, waterIntervalMinutes: 60,
+    standEnabled: true, standIntervalMinutes: 50,
+    snoozeMinutes: 10,
+  },
   position: { displayId: '', x: 0, y: 0 },
 }
 
@@ -55,6 +69,7 @@ function normaliseConfig(value: unknown): Config {
       ...(source.bubbleCategories ?? {}),
     },
     quietHours: {...fallback.quietHours, ...(source.quietHours ?? {})},
+    healthReminders: {...fallback.healthReminders, ...(source.healthReminders ?? {})},
     position: {...fallback.position, ...(source.position ?? {})},
   }
 }
@@ -94,17 +109,47 @@ function isQuietTime(now: Date, quiet: Config['quietHours']) {
     : minutes >= start || minutes < end
 }
 
+function createHealthReminder(kind: HealthReminderKind): HealthReminder {
+  return {
+    id: `${kind}-${Date.now()}`,
+    kind,
+    text: kind === 'water'
+      ? '到喝水时间啦，要和噜噜一起喝一杯吗？'
+      : '已经坐了一阵子，要和噜噜一起站起来活动一下吗？',
+  }
+}
+
+function recordHealthAction(kind: HealthReminderKind) {
+  const day = new Date().toLocaleDateString('sv-SE')
+  const key = `luluday:health:${day}`
+  try {
+    const current = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, number>
+    current[kind] = (current[kind] ?? 0) + 1
+    localStorage.setItem(key, JSON.stringify(current))
+    return current[kind]
+  } catch {
+    return 1
+  }
+}
+
 function PetWindow() {
   const [config, setConfig] = useState(fallback)
   const [result, setResult] = useState<Countdown>()
   const [bubble, setBubble] = useState(false)
   const [bubbleText, setBubbleText] = useState('')
+  const [healthReminder, setHealthReminder] = useState<HealthReminder>()
+  const [healthFeedback, setHealthFeedback] = useState('')
   const [manifest, setManifest] = useState<PetManifest>()
   const [direction, setDirection] = useState<'left'|'right'>('right')
   const { state, dispatch } = usePetBehavior(config.sleepDurationSeconds * 1000)
   const splayer = useSPlayerLyrics()
   const dragged = useRef(false)
+  const programmaticResize = useRef(false)
   const bubbleTimer = useRef<number>()
+  const healthFeedbackTimer = useRef<number>()
+  const healthDue = useRef<Record<HealthReminderKind, number>>({water: 0, stand: 0})
+  const healthLatest = useRef({ config, state, reminder: healthReminder })
+  healthLatest.current = { config, state, reminder: healthReminder }
   const showBubble = useCallback((category?: MessageCategory) => {
     if (!config.bubbleEnabled) return
     window.clearTimeout(bubbleTimer.current)
@@ -131,7 +176,9 @@ function PetWindow() {
   }, [config.bubbleCategories, config.bubbleDisplaySeconds, config.bubbleEnabled, config.countdownMode, config.targetDate, result])
   const hideBubble = useCallback(() => {
     window.clearTimeout(bubbleTimer.current)
+    window.clearTimeout(healthFeedbackTimer.current)
     setBubble(false)
+    setHealthFeedback('')
   }, [])
   const refresh = (next: Config) => { setConfig(next); if (next.targetDate) api.countdown(next).then(setResult).catch(console.error) }
   useEffect(() => {
@@ -140,6 +187,7 @@ function PetWindow() {
     const off = Events.On('config:changed', event => refresh(normaliseConfig(event.data)))
     let dragRecoveryTimer: number | undefined
     const finishDrag = () => {
+      if (programmaticResize.current) return
       window.clearTimeout(dragRecoveryTimer)
       window.clearTimeout(bubbleTimer.current)
       dispatch({ type: 'DRAG_END' })
@@ -167,9 +215,18 @@ function PetWindow() {
       hideBubble()
       dispatch({ type: 'SLEEP' })
     })
+    const healthPreview = Events.On('health:preview', event => {
+      const kind = event.data === 'stand' ? 'stand' : 'water'
+      hideBubble()
+      setHealthFeedback('')
+      setHealthReminder(createHealthReminder(kind))
+      dispatch({ type: 'REMINDER_START' })
+    })
     return () => {
       window.clearTimeout(dragRecoveryTimer)
-      off(); dragStart(); dragEnd(); misclassifiedDragEnd(); moved(); motionDirection(); sleep()
+      window.clearTimeout(bubbleTimer.current)
+      window.clearTimeout(healthFeedbackTimer.current)
+      off(); dragStart(); dragEnd(); misclassifiedDragEnd(); moved(); motionDirection(); sleep(); healthPreview()
     }
   }, [])
   useEffect(() => {
@@ -198,6 +255,49 @@ function PetWindow() {
   useEffect(() => {
     if (!config.bubbleEnabled) hideBubble()
   }, [config.bubbleEnabled, hideBubble])
+  useEffect(() => {
+    const health = config.healthReminders
+    const now = Date.now()
+    healthDue.current.water = now + health.waterIntervalMinutes * 60_000
+    healthDue.current.stand = now + health.standIntervalMinutes * 60_000
+    if (!health.enabled) {
+      setHealthReminder(undefined)
+      return
+    }
+    const timer = window.setInterval(() => {
+      const latest = healthLatest.current
+      if (
+        latest.reminder
+        || latest.state !== 'idle'
+        || isQuietTime(new Date(), latest.config.quietHours)
+      ) return
+      const currentTime = Date.now()
+      const settings = latest.config.healthReminders
+      const kind = settings.waterEnabled && currentTime >= healthDue.current.water
+        ? 'water'
+        : settings.standEnabled && currentTime >= healthDue.current.stand
+          ? 'stand'
+          : undefined
+      if (!kind) return
+      const interval = kind === 'water'
+        ? settings.waterIntervalMinutes
+        : settings.standIntervalMinutes
+      healthDue.current[kind] = currentTime + interval * 60_000
+      hideBubble()
+      setHealthFeedback('')
+      setHealthReminder(createHealthReminder(kind))
+      dispatch({ type: 'REMINDER_START' })
+    }, 10_000)
+    return () => window.clearInterval(timer)
+  }, [
+    config.healthReminders.enabled,
+    config.healthReminders.standEnabled,
+    config.healthReminders.standIntervalMinutes,
+    config.healthReminders.waterEnabled,
+    config.healthReminders.waterIntervalMinutes,
+    dispatch,
+    hideBubble,
+  ])
   useEffect(() => {
     if (!config.bubbleEnabled) return
     let timer: number
@@ -243,24 +343,80 @@ function PetWindow() {
     showBubble('petting')
   }
   const animationComplete = useCallback(() => dispatch({ type: 'COMPLETE' }), [dispatch])
+  const resolveHealthReminder = (action: 'complete' | 'snooze' | 'skip') => {
+    if (!healthReminder) return
+    const { kind } = healthReminder
+    setHealthReminder(undefined)
+    window.clearTimeout(bubbleTimer.current)
+    window.clearTimeout(healthFeedbackTimer.current)
+    if (action === 'complete') {
+      const count = recordHealthAction(kind)
+      setHealthFeedback(kind === 'water'
+        ? `干杯！今天已经和噜噜喝了 ${count} 杯水。`
+        : `活动完成！今天已经起来舒展 ${count} 次啦。`)
+      dispatch({ type: kind === 'water' ? 'DRINK' : 'STRETCH' })
+    } else if (action === 'snooze') {
+      healthDue.current[kind] = Date.now() + config.healthReminders.snoozeMinutes * 60_000
+      setHealthFeedback(`${config.healthReminders.snoozeMinutes} 分钟后，噜噜再来叫你。`)
+      dispatch({ type: 'REMINDER_END' })
+    } else {
+      setHealthFeedback('好呀，这次先跳过，舒服最重要。')
+      dispatch({ type: 'REMINDER_END' })
+    }
+    healthFeedbackTimer.current = window.setTimeout(() => setHealthFeedback(''), 4_500)
+  }
   const bubbleBottom = 12 + 245 * config.petScale + 8
   const showingSPlayer = splayer.connected && state === 'singing'
-  const visibleBubble = showingSPlayer ? Boolean(splayer.text) : config.bubbleEnabled && bubble
-  const visibleBubbleText = showingSPlayer ? splayer.text : bubbleText
+  const visibleBubble = Boolean(healthReminder || healthFeedback)
+    || (showingSPlayer ? Boolean(splayer.text) : config.bubbleEnabled && bubble)
+  const visibleBubbleText = healthFeedback || (showingSPlayer ? splayer.text : bubbleText)
+  const bubbleWindowMode = healthReminder
+    ? 'action'
+    : showingSPlayer || healthFeedback || (config.bubbleEnabled && bubble)
+      ? 'normal'
+      : 'none'
+  useEffect(() => {
+    programmaticResize.current = true
+    AppService.SetPetBubbleMode(bubbleWindowMode)
+      .catch(console.error)
+      .finally(() => window.setTimeout(() => { programmaticResize.current = false }, 250))
+  }, [bubbleWindowMode])
+  useEffect(() => () => {
+    AppService.SetPetBubbleMode('none').catch(console.error)
+  }, [])
   const animation = state === 'singing' && (!splayer.playing || !splayer.text) ? 'singingIdle' : state
   return <main className="pet-stage" onDoubleClick={pet}>
-    {visibleBubble && <button className="speech" style={{ bottom: bubbleBottom, top: 'auto' }} onClick={showingSPlayer ? undefined : hideBubble}>
-      {showingSPlayer && splayer.words
-        ? <span className="karaoke-line">{splayer.words.map((word, index) =>
-          <span
-            className="karaoke-word"
-            key={`${index}-${word.text}`}
-            style={{ '--karaoke-progress': `${word.progress * 100}%` } as CSSProperties}
-          >{word.text}</span>,
-        )}</span>
-        : visibleBubbleText}
-      {!showingSPlayer && <span>×</span>}
-    </button>}
+    {visibleBubble && <div
+      className={`speech${healthReminder ? ' speech-action' : ''}`}
+      style={{ bottom: bubbleBottom, top: 'auto' }}
+      onClick={showingSPlayer || healthReminder ? undefined : hideBubble}
+    >
+      {healthReminder
+        ? <>
+          <div className="health-copy">{healthReminder.text}</div>
+          <div className="health-actions">
+            <button onClick={event => { event.stopPropagation(); resolveHealthReminder('complete') }}>
+              {healthReminder.kind === 'water' ? '喝一杯' : '起来活动'}
+            </button>
+            <button className="secondary" onClick={event => { event.stopPropagation(); resolveHealthReminder('snooze') }}>
+              {config.healthReminders.snoozeMinutes} 分钟后
+            </button>
+            <button className="quiet" onClick={event => { event.stopPropagation(); resolveHealthReminder('skip') }}>
+              这次跳过
+            </button>
+          </div>
+        </>
+        : showingSPlayer && splayer.words
+          ? <span className="karaoke-line">{splayer.words.map((word, index) =>
+            <span
+              className="karaoke-word"
+              key={`${index}-${word.text}`}
+              style={{ '--karaoke-progress': `${word.progress * 100}%` } as CSSProperties}
+            >{word.text}</span>,
+          )}</span>
+          : visibleBubbleText}
+      {!showingSPlayer && !healthReminder && <span>×</span>}
+    </div>}
     <div className="pet" style={{ transform: `translateX(-50%) scale(${config.petScale})` }} onClick={click}>
       {manifest && <AnimationPlayer manifest={manifest} animation={animation} flip={state === 'walk' && direction === 'right'} onComplete={animationComplete}/>}
     </div>
@@ -338,6 +494,7 @@ function SettingsWindow() {
     countdown: { title: '离职倒计时', description: '设置日期和工作日计算规则。' },
     pet: { title: '桌宠', description: '调整噜噜在桌面上的显示方式。' },
     bubble: { title: '气泡', description: '控制倒计时提醒出现的频率和时长。' },
+    health: { title: '健康陪伴', description: '让噜噜温柔地提醒你喝水和起来活动。' },
     system: { title: '系统', description: '设置勿扰时间并查看运行方式。' },
   }
   return <main className="settings-shell">
@@ -347,6 +504,7 @@ function SettingsWindow() {
           ['countdown', '倒计时'],
           ['pet', '桌宠'],
           ['bubble', '气泡'],
+          ['health', '健康陪伴'],
           ['system', '系统'],
         ] as [SettingsSection, string][]).map(([value, label]) =>
           <button key={value} className={section === value ? 'active' : ''} onClick={() => setSection(value)}>{label}</button>
@@ -398,6 +556,22 @@ function SettingsWindow() {
           )}</div>
         </div>
       </div>}
+      {section === 'health' && <>
+        <div className="panel"><h3>健康提醒</h3>
+          <label><span>启用健康陪伴<small>提醒会遵循勿扰时间，唱歌、睡觉和拖动时自动延后</small></span><input type="checkbox" checked={config.healthReminders.enabled} onChange={e => update('healthReminders', {...config.healthReminders, enabled: e.target.checked})}/></label>
+          <label><span>喝水提醒<small>完成后噜噜会陪你一起喝水</small></span><input type="checkbox" disabled={!config.healthReminders.enabled} checked={config.healthReminders.waterEnabled} onChange={e => update('healthReminders', {...config.healthReminders, waterEnabled: e.target.checked})}/></label>
+          <label><span>喝水间隔<small>{config.healthReminders.waterIntervalMinutes} 分钟</small></span><input type="range" min="15" max="240" step="5" disabled={!config.healthReminders.enabled || !config.healthReminders.waterEnabled} value={config.healthReminders.waterIntervalMinutes} onChange={e => update('healthReminders', {...config.healthReminders, waterIntervalMinutes: Number(e.target.value)})}/></label>
+          <label><span>久坐活动提醒<small>完成后噜噜会打哈欠、伸懒腰并转一圈</small></span><input type="checkbox" disabled={!config.healthReminders.enabled} checked={config.healthReminders.standEnabled} onChange={e => update('healthReminders', {...config.healthReminders, standEnabled: e.target.checked})}/></label>
+          <label><span>活动间隔<small>{config.healthReminders.standIntervalMinutes} 分钟</small></span><input type="range" min="15" max="180" step="5" disabled={!config.healthReminders.enabled || !config.healthReminders.standEnabled} value={config.healthReminders.standIntervalMinutes} onChange={e => update('healthReminders', {...config.healthReminders, standIntervalMinutes: Number(e.target.value)})}/></label>
+          <label><span>稍后提醒<small>选择“稍后”时延迟 {config.healthReminders.snoozeMinutes} 分钟</small></span><input type="range" min="5" max="60" step="5" disabled={!config.healthReminders.enabled} value={config.healthReminders.snoozeMinutes} onChange={e => update('healthReminders', {...config.healthReminders, snoozeMinutes: Number(e.target.value)})}/></label>
+        </div>
+        <div className="panel"><h3>立即预览</h3>
+          <div className="position-actions">
+            <button type="button" onClick={() => void Events.Emit('health:preview', 'water')}>预览喝水互动</button>
+            <button type="button" className="secondary" onClick={() => void Events.Emit('health:preview', 'stand')}>预览活动互动</button>
+          </div>
+        </div>
+      </>}
       {section === 'system' && <>
         <div className="panel"><h3>启动</h3>
           <label><span>开机自动启动<small>{autostartAvailable ? '登录 Windows 后自动启动噜噜日' : '正式构建版本中可用，dev 模式不会写入启动项'}</small></span><input type="checkbox" disabled={!autostartAvailable} checked={config.launchAtStartup} onChange={e => update('launchAtStartup', e.target.checked)}/></label>

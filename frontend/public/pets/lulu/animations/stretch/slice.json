@@ -1,0 +1,28 @@
+{
+  "source": "imagegen:call_C10yg4ztuEYQxLJbhKgRC2Ye",
+  "layout": {
+    "columns": 4,
+    "rows": 3
+  },
+  "frames": 12,
+  "sequence": [
+    "yawn",
+    "arms-start",
+    "arms-shoulder",
+    "arms-high",
+    "full-stretch",
+    "side-bend-right-small",
+    "side-bend-right-full",
+    "return-center",
+    "side-bend-left-small",
+    "side-bend-left-full",
+    "arms-lowering",
+    "idle-refreshed"
+  ],
+  "normalization": {
+    "canvas": [560, 588],
+    "subjectHeight": 562,
+    "centerX": 280,
+    "baselineY": 576
+  }
+}

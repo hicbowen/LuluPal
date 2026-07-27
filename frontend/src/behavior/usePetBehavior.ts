@@ -15,7 +15,7 @@ export function usePetBehavior(sleepDurationMS = 30_000) {
   const dispatch = useCallback((event: BehaviorEvent) => dispatchBase(event), [])
 
   useEffect(() => {
-    if (state === 'dragged' || state === 'paused' || state === 'hidden' || state === 'singing') return
+    if (state === 'dragged' || state === 'paused' || state === 'hidden' || state === 'singing' || state === 'reminding') return
     let timer: number
     let cancelled = false
 
