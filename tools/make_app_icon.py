@@ -1,4 +1,4 @@
-"""Build the LuluDay app icon from an existing pet animation frame."""
+"""Build the LuluPal app icon from an existing pet animation frame."""
 from __future__ import annotations
 
 from pathlib import Path

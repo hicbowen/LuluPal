@@ -8,9 +8,9 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"luluday/internal/autostart"
-	"luluday/internal/config"
-	"luluday/internal/pet"
+	"lulupal/internal/autostart"
+	"lulupal/internal/config"
+	"lulupal/internal/pet"
 )
 
 //go:embed all:frontend/dist
@@ -24,13 +24,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store := config.NewStore(filepath.Join(configRoot, "LuluDay", "config.json"))
+	configPath := filepath.Join(configRoot, "LuluPal", "config.json")
+	legacyConfigPath := filepath.Join(configRoot, "LuluDay", "config.json")
+	if migrated, migrateErr := config.MigrateLegacyFile(legacyConfigPath, configPath); migrateErr != nil {
+		log.Printf("legacy config migration failed: %v", migrateErr)
+	} else if migrated {
+		log.Printf("migrated config from LuluDay to LuluPal")
+	}
+	store := config.NewStore(configPath)
 	current, err := store.Load()
 	if err != nil {
 		log.Printf("config load failed: %v", err)
 	}
-	if current.LaunchAtStartup {
-		if err := autostart.Set(true); err != nil {
+	if autostart.Available() {
+		if err := autostart.Set(current.LaunchAtStartup); err != nil {
 			log.Printf("autostart sync failed: %v", err)
 		}
 	}
@@ -45,7 +52,7 @@ func main() {
 		}
 	})
 	app = application.New(application.Options{
-		Name: "LuluDay", Description: "陪在桌面上的噜噜",
+		Name: "噜噜", Description: "桌面上的噜噜伴侣",
 		Services: []application.Service{application.NewService(service)},
 		Assets:   application.AssetOptions{Handler: application.AssetFileServerFS(assets)},
 		Mac:      application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: false},
@@ -130,7 +137,7 @@ func main() {
 
 	tray := app.SystemTray.New()
 	tray.SetIcon(trayIcon)
-	tray.SetTooltip("噜噜 · 你的桌面小伙伴")
+	tray.SetTooltip("噜噜 · 桌面上的噜噜伴侣")
 	menu := app.NewMenu()
 	menu.Add("显示 / 隐藏噜噜").OnClick(func(*application.Context) { togglePet() })
 	menu.Add("设置").OnClick(openSettings)

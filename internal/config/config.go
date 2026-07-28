@@ -76,6 +76,38 @@ type Store struct {
 }
 
 func NewStore(path string) *Store { return &Store{path: path, data: Default()} }
+
+// MigrateLegacyFile copies an existing legacy configuration to the new path
+// without deleting or overwriting either user's file.
+func MigrateLegacyFile(legacyPath, currentPath string) (bool, error) {
+	if _, err := os.Stat(currentPath); err == nil {
+		return false, nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return false, err
+	}
+
+	raw, err := os.ReadFile(legacyPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if err := os.MkdirAll(filepath.Dir(currentPath), 0o755); err != nil {
+		return false, err
+	}
+
+	tempPath := currentPath + ".migrate"
+	if err := os.WriteFile(tempPath, raw, 0o600); err != nil {
+		return false, err
+	}
+	if err := os.Rename(tempPath, currentPath); err != nil {
+		_ = os.Remove(tempPath)
+		return false, err
+	}
+	return true, nil
+}
+
 func (s *Store) Load() (Config, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

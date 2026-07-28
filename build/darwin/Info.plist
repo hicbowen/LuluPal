@@ -3,15 +3,17 @@
 <plist version="1.0">
 	<dict>
 		<key>CFBundleExecutable</key>
-		<string>luluday</string>
+		<string>LuluPal</string>
 		<key>CFBundleGetInfoString</key>
-		<string>陪在桌面上的噜噜</string>
+		<string>桌面上的噜噜伴侣</string>
 		<key>CFBundleIconFile</key>
 		<string>icons.icns</string>
 		<key>CFBundleIdentifier</key>
-		<string>com.luluday.desktop</string>
+		<string>com.lulupal.desktop</string>
 		<key>CFBundleName</key>
-		<string>LuluDay</string>
+		<string>噜噜</string>
+		<key>CFBundleDisplayName</key>
+		<string>噜噜</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -23,6 +25,6 @@
 		<key>NSHighResolutionCapable</key>
 		<string>true</string>
 		<key>NSHumanReadableCopyright</key>
-		<string>(c) 2026 LuluDay</string>
+		<string>(c) 2026 LuluPal</string>
 	</dict>
 </plist>

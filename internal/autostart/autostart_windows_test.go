@@ -9,9 +9,9 @@ func TestDevelopmentExecutableDetection(t *testing.T) {
 		path string
 		want bool
 	}{
-		{`C:\Users\me\AppData\Local\Temp\wails\LuluDay.exe`, true},
-		{`C:\Users\me\AppData\Local\go-build\123\LuluDay.exe`, true},
-		{`C:\Program Files\LuluDay\LuluDay.exe`, false},
+		{`C:\Users\me\AppData\Local\Temp\wails\LuluPal.exe`, true},
+		{`C:\Users\me\AppData\Local\go-build\123\LuluPal.exe`, true},
+		{`C:\Program Files\LuluPal\LuluPal.exe`, false},
 	}
 	for _, test := range tests {
 		if got := isDevelopmentExecutable(test.path); got != test.want {

@@ -5,7 +5,7 @@ import {
   Palette, Scaling, Settings,
   type LucideIcon,
 } from 'lucide-react'
-import { AppService } from '../bindings/luluday'
+import { AppService } from '../bindings/lulupal'
 import { AnimationPlayer, PetManifest } from './animation/AnimationPlayer'
 import { usePetBehavior } from './behavior/usePetBehavior'
 import { useSPlayerLyrics } from './splayer/useSPlayerLyrics'
@@ -134,9 +134,10 @@ function createHealthReminder(kind: HealthReminderKind): HealthReminder {
 
 function recordHealthAction(kind: HealthReminderKind) {
   const day = new Date().toLocaleDateString('sv-SE')
-  const key = `luluday:health:${day}`
+  const key = `lulupal:health:${day}`
+  const legacyKey = `luluday:health:${day}`
   try {
-    const current = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, number>
+    const current = JSON.parse(localStorage.getItem(key) ?? localStorage.getItem(legacyKey) ?? '{}') as Record<string, number>
     current[kind] = (current[kind] ?? 0) + 1
     localStorage.setItem(key, JSON.stringify(current))
     return current[kind]
@@ -550,7 +551,7 @@ function SettingsWindow() {
     <aside className="settings-sidebar">
       <div className="brand">
         <div className="mini-pet"><img src="/pets/lulu/animations/idle/001.png" alt="噜噜"/></div>
-        <div><h1>噜噜</h1><p>你的桌面小伙伴</p></div>
+        <div><h1>噜噜</h1><p>桌面上的噜噜伴侣</p></div>
       </div>
       <nav>
         {([
@@ -567,7 +568,7 @@ function SettingsWindow() {
         )}
       </nav>
       <div className="sidebar-tip"><span className="online-dot"/><span>噜噜正在桌面陪你</span></div>
-      <small>v0.1.0 · LuluDay</small>
+      <small>v0.1.0 · LuluPal</small>
     </aside>
     <section className="settings-content">
       <header><div><h2>{sectionCopy[section].title}</h2><p>{sectionCopy[section].description} 设置会自动保存。</p></div></header>

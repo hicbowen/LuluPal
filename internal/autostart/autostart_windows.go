@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	runKey    = `Software\Microsoft\Windows\CurrentVersion\Run`
-	valueName = "LuluDay"
+	runKey          = `Software\Microsoft\Windows\CurrentVersion\Run`
+	valueName       = "LuluPal"
+	legacyValueName = "LuluDay"
 )
 
 var ErrDevelopmentBuild = errors.New("开机启动仅在正式构建中可用")
@@ -37,9 +38,19 @@ func Set(enabled bool) error {
 	}
 	defer key.Close()
 	if enabled {
-		return key.SetStringValue(valueName, `"`+executable+`"`)
+		if err := key.SetStringValue(valueName, `"`+executable+`"`); err != nil {
+			return err
+		}
+		return deleteValueIfPresent(key, legacyValueName)
 	}
-	err = key.DeleteValue(valueName)
+	if err := deleteValueIfPresent(key, valueName); err != nil {
+		return err
+	}
+	return deleteValueIfPresent(key, legacyValueName)
+}
+
+func deleteValueIfPresent(key registry.Key, name string) error {
+	err := key.DeleteValue(name)
 	if errors.Is(err, registry.ErrNotExist) {
 		return nil
 	}

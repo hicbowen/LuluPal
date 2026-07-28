@@ -8,15 +8,15 @@
   IgnorableNamespaces="uap3">
   
   <Identity 
-    Name="com.example.luluday"
-    Publisher="CN=LuluDay"
+    Name="com.lulupal.desktop"
+    Publisher="CN=LuluPal"
     Version="0.1.0.0" 
     ProcessorArchitecture="x64" />
   
   <Properties>
-    <DisplayName>噜噜日</DisplayName>
-    <PublisherDisplayName>LuluDay</PublisherDisplayName>
-    <Description>A LuluDay application</Description>
+    <DisplayName>噜噜</DisplayName>
+    <PublisherDisplayName>LuluPal</PublisherDisplayName>
+    <Description>桌面上的噜噜伴侣</Description>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   
@@ -29,10 +29,10 @@
   </Resources>
   
   <Applications>
-    <Application Id="com.example.luluday" Executable="luluday.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="com.lulupal.desktop" Executable="LuluPal.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="噜噜日"
-        Description="A LuluDay application"
+        DisplayName="噜噜"
+        Description="桌面上的噜噜伴侣"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -41,7 +41,7 @@
       </uap:VisualElements>
       
       <Extensions>
-        <desktop:Extension Category="windows.fullTrustProcess" Executable="luluday.exe" />
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="LuluPal.exe" />
         
         
       </Extensions>

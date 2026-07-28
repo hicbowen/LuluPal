@@ -5,19 +5,19 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "luluday"
+    !define INFO_PROJECTNAME "LuluPal"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME "LuluDay"
+    !define INFO_COMPANYNAME "LuluPal"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "LuluDay"
+    !define INFO_PRODUCTNAME "LuluPal"
 !endif
 !ifndef INFO_PRODUCTVERSION
     !define INFO_PRODUCTVERSION "0.1.0"
 !endif
 !ifndef INFO_COPYRIGHT
-    !define INFO_COPYRIGHT "(c) 2026 LuluDay"
+    !define INFO_COPYRIGHT "(c) 2026 LuluPal"
 !endif
 !ifndef PRODUCT_EXECUTABLE
     !define PRODUCT_EXECUTABLE "${INFO_PROJECTNAME}.exe"

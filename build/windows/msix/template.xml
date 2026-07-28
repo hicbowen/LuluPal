@@ -8,27 +8,27 @@
         AllowPromptForPassword="false">
     </Settings>
     <Installer
-        Path="luluday.exe"
+        Path="LuluPal.exe"
         Arguments=""
-        InstallLocation="C:\Program Files\LuluDay\噜噜日">
+        InstallLocation="C:\Program Files\LuluPal">
     </Installer>
     <PackageInformation
-        PackageName="LuluDay"
-        PackageDisplayName="噜噜日"
-        PublisherName="CN=LuluDay"
-        PublisherDisplayName="LuluDay"
+        PackageName="LuluPal"
+        PackageDisplayName="噜噜"
+        PublisherName="CN=LuluPal"
+        PublisherDisplayName="LuluPal"
         Version="0.1.0.0"
-        PackageDescription="A LuluDay application">
+        PackageDescription="桌面上的噜噜伴侣">
         <Capabilities>
             <Capability Name="runFullTrust" />
             
         </Capabilities>
         <Applications>
             <Application
-                Id="com.example.luluday"
-                Description="A LuluDay application"
-                DisplayName="噜噜日"
-                ExecutableName="luluday.exe"
+                Id="com.lulupal.desktop"
+                Description="桌面上的噜噜伴侣"
+                DisplayName="噜噜"
+                ExecutableName="LuluPal.exe"
                 EntryPoint="Windows.FullTrustApplication">
                 
             </Application>
@@ -41,13 +41,13 @@
         </Dependencies>
         <Properties>
             <Framework>false</Framework>
-            <DisplayName>噜噜日</DisplayName>
-            <PublisherDisplayName>LuluDay</PublisherDisplayName>
-            <Description>A LuluDay application</Description>
+            <DisplayName>噜噜</DisplayName>
+            <PublisherDisplayName>LuluPal</PublisherDisplayName>
+            <Description>桌面上的噜噜伴侣</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>
-    <SaveLocation PackagePath="luluday.msix" />
+    <SaveLocation PackagePath="LuluPal.msix" />
     <PackageIntegrity>
         <CertificatePath></CertificatePath>
     </PackageIntegrity>

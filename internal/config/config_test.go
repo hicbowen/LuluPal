@@ -25,6 +25,83 @@ func TestStoreAndMigration(t *testing.T) {
 	}
 }
 
+func TestMigrateLegacyFileCopiesExistingConfig(t *testing.T) {
+	root := t.TempDir()
+	legacyPath := filepath.Join(root, "LuluDay", "config.json")
+	currentPath := filepath.Join(root, "LuluPal", "config.json")
+	raw := []byte(`{"version":8,"targetDate":"2027-01-01"}`)
+	if err := os.MkdirAll(filepath.Dir(legacyPath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(legacyPath, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	migrated, err := MigrateLegacyFile(legacyPath, currentPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !migrated {
+		t.Fatal("expected legacy config to be migrated")
+	}
+	got, err := os.ReadFile(currentPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(raw) {
+		t.Fatalf("migrated config = %q, want %q", got, raw)
+	}
+	if _, err := os.Stat(legacyPath); err != nil {
+		t.Fatalf("legacy config should be preserved: %v", err)
+	}
+}
+
+func TestMigrateLegacyFileDoesNotOverwriteCurrentConfig(t *testing.T) {
+	root := t.TempDir()
+	legacyPath := filepath.Join(root, "LuluDay", "config.json")
+	currentPath := filepath.Join(root, "LuluPal", "config.json")
+	for path, raw := range map[string][]byte{
+		legacyPath:  []byte(`{"source":"legacy"}`),
+		currentPath: []byte(`{"source":"current"}`),
+	} {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, raw, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	migrated, err := MigrateLegacyFile(legacyPath, currentPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if migrated {
+		t.Fatal("existing current config should not be overwritten")
+	}
+	got, err := os.ReadFile(currentPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != `{"source":"current"}` {
+		t.Fatalf("current config was changed: %q", got)
+	}
+}
+
+func TestMigrateLegacyFileWithoutLegacyConfigIsNoOp(t *testing.T) {
+	root := t.TempDir()
+	migrated, err := MigrateLegacyFile(
+		filepath.Join(root, "LuluDay", "config.json"),
+		filepath.Join(root, "LuluPal", "config.json"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if migrated {
+		t.Fatal("missing legacy config should be a no-op")
+	}
+}
+
 func TestVersionOneConfigGetsDefaultWeekendRestDays(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "config.json")
 	if err := os.WriteFile(p, []byte(`{"version":1,"countdownMode":"workday","petScale":1}`), 0o600); err != nil {

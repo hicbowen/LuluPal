@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
-Name=LuluDay
-Comment=陪在桌面上的噜噜
+Name=噜噜
+Comment=桌面上的噜噜伴侣
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/luluday %u
+Exec=/usr/local/bin/LuluPal %u
 Terminal=false
 Type=Application
-Icon=luluday
+Icon=LuluPal
 Categories=Utility;
-StartupWMClass=luluday
+StartupWMClass=LuluPal
 
  

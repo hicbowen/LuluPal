@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"luluday/internal/autostart"
-	"luluday/internal/config"
-	"luluday/internal/countdown"
-	"luluday/internal/pet"
+	"lulupal/internal/autostart"
+	"lulupal/internal/config"
+	"lulupal/internal/countdown"
+	"lulupal/internal/pet"
 	"time"
 )
 
