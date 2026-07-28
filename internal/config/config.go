@@ -5,10 +5,11 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
-const CurrentVersion = 6
+const CurrentVersion = 8
 
 type QuietHours struct {
 	Enabled bool   `json:"enabled"`
@@ -29,30 +30,32 @@ type HealthReminders struct {
 	SnoozeMinutes        int  `json:"snoozeMinutes"`
 }
 type Config struct {
-	Version              int             `json:"version"`
-	TargetDate           string          `json:"targetDate"`
-	CountdownMode        string          `json:"countdownMode"`
-	RestWeekdays         []int           `json:"restWeekdays"`
-	IncludeToday         bool            `json:"includeToday"`
-	IncludeTargetDate    bool            `json:"includeTargetDate"`
-	PetScale             float64         `json:"petScale"`
-	ActivityArea         string          `json:"activityArea"`
-	BottomMargin         int             `json:"bottomMargin"`
-	SleepDurationSeconds int             `json:"sleepDurationSeconds"`
-	AlwaysOnTop          bool            `json:"alwaysOnTop"`
-	LaunchAtStartup      bool            `json:"launchAtStartup"`
-	BubbleEnabled        bool            `json:"bubbleEnabled"`
-	BubbleIntervalMin    int             `json:"bubbleIntervalMin"`
-	BubbleIntervalMax    int             `json:"bubbleIntervalMax"`
-	BubbleDisplaySeconds int             `json:"bubbleDisplaySeconds"`
-	BubbleCategories     map[string]bool `json:"bubbleCategories"`
-	QuietHours           QuietHours      `json:"quietHours"`
-	HealthReminders      HealthReminders `json:"healthReminders"`
-	Position             Position        `json:"position"`
+	Version              int               `json:"version"`
+	TargetDate           string            `json:"targetDate"`
+	CountdownMode        string            `json:"countdownMode"`
+	RestWeekdays         []int             `json:"restWeekdays"`
+	IncludeToday         bool              `json:"includeToday"`
+	IncludeTargetDate    bool              `json:"includeTargetDate"`
+	PetScale             float64           `json:"petScale"`
+	ActivityArea         string            `json:"activityArea"`
+	BottomMargin         int               `json:"bottomMargin"`
+	SleepDurationSeconds int               `json:"sleepDurationSeconds"`
+	AlwaysOnTop          bool              `json:"alwaysOnTop"`
+	LaunchAtStartup      bool              `json:"launchAtStartup"`
+	BubbleEnabled        bool              `json:"bubbleEnabled"`
+	SPlayerEnabled       bool              `json:"splayerEnabled"`
+	BubbleIntervalMin    int               `json:"bubbleIntervalMin"`
+	BubbleIntervalMax    int               `json:"bubbleIntervalMax"`
+	BubbleDisplaySeconds int               `json:"bubbleDisplaySeconds"`
+	BubbleCategories     map[string]bool   `json:"bubbleCategories"`
+	CustomMessages       map[string]string `json:"customMessages"`
+	QuietHours           QuietHours        `json:"quietHours"`
+	HealthReminders      HealthReminders   `json:"healthReminders"`
+	Position             Position          `json:"position"`
 }
 
 func Default() Config {
-	return Config{Version: CurrentVersion, CountdownMode: "calendar", RestWeekdays: []int{0, 6}, IncludeTargetDate: true, PetScale: 1, ActivityArea: "bottom", BottomMargin: 12, SleepDurationSeconds: 30, AlwaysOnTop: true, BubbleEnabled: true, BubbleIntervalMin: 20, BubbleIntervalMax: 45, BubbleDisplaySeconds: 7, BubbleCategories: defaultBubbleCategories(), QuietHours: QuietHours{Enabled: true, Start: "22:00", End: "08:00"}, HealthReminders: defaultHealthReminders()}
+	return Config{Version: CurrentVersion, CountdownMode: "calendar", RestWeekdays: []int{0, 6}, IncludeTargetDate: true, PetScale: 1, ActivityArea: "bottom", BottomMargin: 12, SleepDurationSeconds: 30, AlwaysOnTop: true, BubbleEnabled: true, SPlayerEnabled: true, BubbleIntervalMin: 20, BubbleIntervalMax: 45, BubbleDisplaySeconds: 7, BubbleCategories: defaultBubbleCategories(), CustomMessages: map[string]string{}, QuietHours: QuietHours{Enabled: true, Start: "22:00", End: "08:00"}, HealthReminders: defaultHealthReminders()}
 }
 
 func defaultHealthReminders() HealthReminders {
@@ -154,6 +157,12 @@ func migrate(v Config) Config {
 	if oldVersion < 6 {
 		v.HealthReminders = d.HealthReminders
 	}
+	if oldVersion < 7 {
+		v.SPlayerEnabled = d.SPlayerEnabled
+	}
+	if oldVersion < 8 {
+		v.CustomMessages = map[string]string{}
+	}
 	if v.SleepDurationSeconds < 5 {
 		v.SleepDurationSeconds = 5
 	}
@@ -185,6 +194,21 @@ func migrate(v Config) Config {
 		if _, exists := v.BubbleCategories[category]; !exists {
 			v.BubbleCategories[category] = enabled
 		}
+	}
+	if v.CustomMessages == nil {
+		v.CustomMessages = map[string]string{}
+	}
+	for id, text := range v.CustomMessages {
+		text = strings.TrimSpace(text)
+		if text == "" {
+			delete(v.CustomMessages, id)
+			continue
+		}
+		runes := []rune(text)
+		if len(runes) > 180 {
+			text = string(runes[:180])
+		}
+		v.CustomMessages[id] = text
 	}
 	if v.ActivityArea != "bottom-left" && v.ActivityArea != "bottom-right" {
 		v.ActivityArea = "bottom"

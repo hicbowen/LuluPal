@@ -121,7 +121,7 @@ function currentKaraoke(lines: KaraokeLine[], currentTime: number) {
   }))
 }
 
-export function useSPlayerLyrics(url = DEFAULT_URL) {
+export function useSPlayerLyrics(enabled = true, url = DEFAULT_URL) {
   const [connected, setConnected] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [text, setText] = useState('')
@@ -135,6 +135,19 @@ export function useSPlayerLyrics(url = DEFAULT_URL) {
   const lastServerProgress = useRef<{ milliseconds: number; receivedAt: number }>()
 
   useEffect(() => {
+    if (!enabled) {
+      setConnected(false)
+      setIsPlaying(false)
+      setText('')
+      setWords(undefined)
+      lyrics.current = []
+      karaoke.current = []
+      progress.current = 0
+      playing.current = false
+      hasExplicitStatus.current = false
+      lastServerProgress.current = undefined
+      return
+    }
     let socket: WebSocket | undefined
     let reconnectTimer: number | undefined
     let disposed = false
@@ -259,7 +272,7 @@ export function useSPlayerLyrics(url = DEFAULT_URL) {
       window.clearInterval(lyricTimer)
       socket?.close()
     }
-  }, [url])
+  }, [enabled, url])
 
   return { connected, playing: isPlaying, text, words }
 }

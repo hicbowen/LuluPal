@@ -8,13 +8,11 @@ info:
   companyName: "LuluDay" # The name of the company
   productName: "LuluDay" # ASCII keeps NSIS scripts portable across Windows code pages
   productIdentifier: "com.luluday.desktop" # The unique product identifier
-  description: "离职倒计时桌面宠物" # The application description
+  description: "陪在桌面上的噜噜" # The application description
   copyright: "(c) 2026 LuluDay" # Copyright text
-  comments: "噜噜日 · 离职倒计时桌面宠物" # Comments
+  comments: "陪在桌面上的噜噜" # Comments
   version: "0.1.0" # The application version
-  # cfBundleIconName: "appicon" # The macOS icon name in Assets.car icon bundles (optional)
-  #                               # Should match the name of your .icon file without the extension
-  #                               # If not set and Assets.car exists, defaults to "appicon"
+  # macOS uses build/darwin/icons.icns generated from build/appicon.png.
 
 # iOS build configuration (uncomment to customise iOS project generation)
 # Note: Keys under `ios` OVERRIDE values under `info` when set.
@@ -28,7 +26,7 @@ info:
 #   # The company/organisation name for templates and project settings
 #   company: "LuluDay"
 #   # Additional comments to embed in Info.plist metadata
-#   comments: "噜噜日 · 离职倒计时桌面宠物"
+#   comments: "陪在桌面上的噜噜"
 
 # Dev mode configuration
 dev_mode:

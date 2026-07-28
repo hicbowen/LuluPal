@@ -1,0 +1,27 @@
+{
+  "source": "frontend/public/pets/lulu/sheets/lateral-raise-green.png",
+  "layout": {
+    "columns": 4,
+    "rows": 2
+  },
+  "frames": 7,
+  "sourceOrder": [1, 2, 3, 5, 6, 7, 8],
+  "sequence": [
+    "arms-down",
+    "raise-20-degrees",
+    "raise-55-degrees",
+    "peak-at-shoulder-line",
+    "lowering-from-shoulder-line",
+    "lowering-40-degrees",
+    "return-down"
+  ],
+  "normalization": {
+    "canvas": [560, 588],
+    "subjectHeight": 532,
+    "centerX": 280,
+    "topPadding": 28,
+    "bottomPadding": 28,
+    "displayScale": 1.0564,
+    "displayOffsetY": 7
+  }
+}

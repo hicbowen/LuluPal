@@ -15,10 +15,12 @@ export interface Config {
     "alwaysOnTop": boolean;
     "launchAtStartup": boolean;
     "bubbleEnabled": boolean;
+    "splayerEnabled": boolean;
     "bubbleIntervalMin": number;
     "bubbleIntervalMax": number;
     "bubbleDisplaySeconds": number;
     "bubbleCategories": { [_ in string]?: boolean } | null;
+    "customMessages": { [_ in string]?: string } | null;
     "quietHours": QuietHours;
     "healthReminders": HealthReminders;
     "position": Position;

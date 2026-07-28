@@ -5,11 +5,9 @@
 		<key>CFBundleExecutable</key>
 		<string>luluday</string>
 		<key>CFBundleGetInfoString</key>
-		<string>噜噜日 · 离职倒计时桌面宠物</string>
+		<string>陪在桌面上的噜噜</string>
 		<key>CFBundleIconFile</key>
-		<string>icons</string>
-		<key>CFBundleIconName</key>
-		<string>appicon</string>
+		<string>icons.icns</string>
 		<key>CFBundleIdentifier</key>
 		<string>com.luluday.desktop</string>
 		<key>CFBundleName</key>

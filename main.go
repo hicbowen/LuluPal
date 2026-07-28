@@ -45,7 +45,7 @@ func main() {
 		}
 	})
 	app = application.New(application.Options{
-		Name: "LuluDay", Description: "离职倒计时桌面宠物",
+		Name: "LuluDay", Description: "陪在桌面上的噜噜",
 		Services: []application.Service{application.NewService(service)},
 		Assets:   application.AssetOptions{Handler: application.AssetFileServerFS(assets)},
 		Mac:      application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: false},
@@ -83,8 +83,8 @@ func main() {
 		motionController.ConstrainNow()
 	})
 	settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Name: "settings", Title: "噜噜日 · 设置", Width: 920, Height: 680,
-		MinWidth: 760, MinHeight: 560, URL: "/?window=settings",
+		Name: "settings", Title: "噜噜 · 设置", Width: 980, Height: 720,
+		MinWidth: 780, MinHeight: 600, URL: "/?window=settings",
 		BackgroundColour: application.NewRGB(247, 244, 236), Hidden: true,
 	})
 	settingsWindow.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
@@ -92,39 +92,54 @@ func main() {
 		event.Cancel()
 	})
 
-	tray := app.SystemTray.New()
-	tray.SetIcon(trayIcon)
-	tray.SetTooltip("噜噜日 · 离职倒计时桌宠")
-	menu := app.NewMenu()
-	menu.Add("显示 / 隐藏噜噜").OnClick(func(*application.Context) {
+	hidePet := func(*application.Context) {
+		service.StopMotion()
+		petWindow.Hide()
+	}
+	togglePet := func() {
 		if petWindow.IsVisible() {
-			service.StopMotion()
-			petWindow.Hide()
-		} else {
-			petWindow.Show()
+			hidePet(nil)
+			return
 		}
-	})
-	menu.Add("打开设置").OnClick(func(*application.Context) {
+		petWindow.Show()
+	}
+	openSettings := func(*application.Context) {
 		settingsWindow.Show().Focus()
-	})
-	menu.Add("让噜噜睡觉").OnClick(func(*application.Context) {
+	}
+	sleepPet := func(*application.Context) {
 		service.StopMotion()
 		app.Event.Emit("pet:sleep")
-	})
-	menu.AddSeparator()
-	menu.Add("退出噜噜日").OnClick(func(*application.Context) {
+	}
+	exercisePet := func(*application.Context) {
+		service.StopMotion()
+		app.Event.Emit("pet:exercise")
+	}
+	quitApp := func(*application.Context) {
 		service.StopMotion()
 		app.Quit()
-	})
+	}
+
+	petMenu := app.ContextMenu.New()
+	petMenu.Add("隐藏").OnClick(hidePet)
+	petMenu.Add("设置").OnClick(openSettings)
+	petMenu.Add("睡觉").OnClick(sleepPet)
+	petMenu.Add("锻炼").OnClick(exercisePet)
+	petMenu.AddSeparator()
+	petMenu.Add("退出").OnClick(quitApp)
+	app.ContextMenu.Add("pet-menu", petMenu)
+
+	tray := app.SystemTray.New()
+	tray.SetIcon(trayIcon)
+	tray.SetTooltip("噜噜 · 你的桌面小伙伴")
+	menu := app.NewMenu()
+	menu.Add("显示 / 隐藏噜噜").OnClick(func(*application.Context) { togglePet() })
+	menu.Add("设置").OnClick(openSettings)
+	menu.Add("睡觉").OnClick(sleepPet)
+	menu.Add("锻炼").OnClick(exercisePet)
+	menu.AddSeparator()
+	menu.Add("退出").OnClick(quitApp)
 	tray.SetMenu(menu)
-	tray.OnClick(func() {
-		if petWindow.IsVisible() {
-			service.StopMotion()
-			petWindow.Hide()
-		} else {
-			petWindow.Show()
-		}
-	})
+	tray.OnClick(togglePet)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}

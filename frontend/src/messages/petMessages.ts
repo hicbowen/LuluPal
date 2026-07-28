@@ -14,6 +14,8 @@ export type PetMessage = {
   cooldownMinutes?: number
 }
 
+export type EditableMessage = Pick<PetMessage, 'id' | 'text' | 'category'>
+
 export type MessageContext = {
   days: number
   workingDays: number
@@ -38,11 +40,11 @@ export const messageCategoryLabels: Record<MessageCategory, string> = {
 }
 
 export const messages: PetMessage[] = [
-  { id: 'countdown-days', category: 'countdown', text: '距离解放还有 {days} 天。', weight: 7 },
-  { id: 'countdown-workdays', category: 'countdown', text: '还有 {workingDays} 个工作日，坚持住。', weight: 5 },
-  { id: 'countdown-little-less', category: 'countdown', text: '今天也成功熬过去一点。', weight: 3 },
+  { id: 'countdown-days', category: 'countdown', text: '距离期待的日子还有 {days} 天。', weight: 7 },
+  { id: 'countdown-workdays', category: 'countdown', text: '换算一下，还有 {workingDays} 个工作日。', weight: 5 },
+  { id: 'countdown-little-less', category: 'countdown', text: '今天也向期待的日子靠近一点。', weight: 3 },
   { id: 'countdown-calendar', category: 'countdown', text: '{targetDate}，噜噜帮你记着呢。', weight: 2, cooldownMinutes: 60 },
-  { id: 'countdown-progress', category: 'countdown', text: '每过一天，自由就靠近一点。', weight: 3 },
+  { id: 'countdown-progress', category: 'countdown', text: '每过一天，目标就靠近一点。', weight: 3 },
 
   { id: 'work-fish', category: 'work', text: '认真工作，也要认真摸鱼。', weight: 3 },
   { id: 'work-water', category: 'work', text: '喝口水吧，待办不会趁机逃跑的。', weight: 3, cooldownMinutes: 40 },
@@ -62,8 +64,8 @@ export const messages: PetMessage[] = [
   { id: 'evening-done', category: 'evening', text: '辛苦啦，今天已经做得够多了。', weight: 3, timeRange: { start: '18:00', end: '23:59' } },
   { id: 'evening-rest', category: 'evening', text: '把工作留在桌面，把晚上还给自己。', weight: 3, timeRange: { start: '19:00', end: '23:59' } },
 
-  { id: 'petting-cannot', category: 'petting', text: '摸我也不能提前离职。', weight: 4 },
-  { id: 'petting-trick', category: 'petting', text: '再摸一下少一天。骗你的。', weight: 4 },
+  { id: 'petting-cannot', category: 'petting', text: '摸摸我，今天也会有好运气。', weight: 4 },
+  { id: 'petting-trick', category: 'petting', text: '再摸一下，快乐多一点。', weight: 4 },
   { id: 'petting-fish', category: 'petting', text: '你是在摸鱼，还是在摸我？', weight: 5 },
   { id: 'petting-comfy', category: 'petting', text: '这里可以再多摸两下。', weight: 3 },
   { id: 'petting-friend', category: 'petting', text: '好吧，今天批准你和噜噜贴贴。', weight: 2 },
@@ -74,13 +76,24 @@ export const messages: PetMessage[] = [
   { id: 'click-tickle', category: 'click', text: '痒痒痒，再点我要跑啦。', weight: 3 },
 
   { id: 'sleep-night', category: 'sleep', text: '噜噜先眯一会儿，等下继续陪你。', weight: 4 },
-  { id: 'sleep-soft', category: 'sleep', text: '嘘……倒计时也需要午睡。', weight: 3 },
+  { id: 'sleep-soft', category: 'sleep', text: '嘘……噜噜也需要午睡。', weight: 3 },
   { id: 'sleep-dream', category: 'sleep', text: '梦里已经放假啦。', weight: 3 },
 
-  { id: 'special-week', category: 'special', text: '最后一周！自由已经在门口等你啦。', weight: 7, minDays: 1, maxDays: 7 },
-  { id: 'special-three', category: 'special', text: '只剩 {days} 天，稳住，我们能赢。', weight: 8, minDays: 1, maxDays: 3 },
-  { id: 'special-today', category: 'special', text: '今天解放！去迎接你的新生活吧！', weight: 10, minDays: 0, maxDays: 0 },
-  { id: 'special-free', category: 'special', text: '已经自由 {days} 天，今天也要开心。', weight: 6 },
+  { id: 'special-week', category: 'special', text: '最后一周！期待的日子已经在门口啦。', weight: 7, minDays: 1, maxDays: 7 },
+  { id: 'special-three', category: 'special', text: '只剩 {days} 天，噜噜陪你一起期待。', weight: 8, minDays: 1, maxDays: 3 },
+  { id: 'special-today', category: 'special', text: '就是今天！去迎接这个特别的日子吧！', weight: 10, minDays: 0, maxDays: 0 },
+  { id: 'special-free', category: 'special', text: '目标日已经过去 {days} 天，今天也要开心。', weight: 6 },
+]
+
+export const noTargetMessage: EditableMessage = {
+  id: 'system-no-target',
+  category: 'countdown',
+  text: '先在设置里告诉我一个值得期待的日期吧',
+}
+
+export const editableMessages: EditableMessage[] = [
+  noTargetMessage,
+  ...messages,
 ]
 
 const lastShown = new Map<string, number>()
@@ -119,9 +132,11 @@ export function selectPetMessage(
   context: MessageContext,
   enabled: Record<MessageCategory, boolean>,
   requested?: MessageCategory,
+  customMessages: Record<string, string> = {},
 ) {
   if (!context.hasTarget && (requested === 'countdown' || requested === 'special')) {
-    return '先在设置里告诉我离职日期吧'
+    const text = customMessages[noTargetMessage.id]?.trim() || noTargetMessage.text
+    return formatMessage(text, context)
   }
   const now = context.now.getTime()
   const eligible = messages.filter(message => {
@@ -149,5 +164,6 @@ export function selectPetMessage(
   lastShown.set(selected.id, now)
   recentIds.push(selected.id)
   if (recentIds.length > 3) recentIds.shift()
-  return formatMessage(selected.text, context)
+  const text = customMessages[selected.id]?.trim() || selected.text
+  return formatMessage(text, context)
 }

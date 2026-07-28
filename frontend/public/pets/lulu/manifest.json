@@ -93,9 +93,39 @@
       ],
       "durations": [180, 140, 140, 140, 180, 140, 140, 140, 140, 140, 160, 220], "loop": false
     },
+    "bicepsCurl": {
+      "frames": [
+        "animations/biceps-curl/001.png",
+        "animations/biceps-curl/002.png",
+        "animations/biceps-curl/003.png",
+        "animations/biceps-curl/004.png",
+        "animations/biceps-curl/005.png",
+        "animations/biceps-curl/006.png",
+        "animations/biceps-curl/007.png"
+      ],
+      "durations": [180, 140, 140, 190, 140, 140, 180],
+      "loop": false,
+      "repeat": 3
+    },
+    "lateralRaise": {
+      "frames": [
+        "animations/lateral-raise/001.png",
+        "animations/lateral-raise/002.png",
+        "animations/lateral-raise/003.png",
+        "animations/lateral-raise/004.png",
+        "animations/lateral-raise/005.png",
+        "animations/lateral-raise/006.png",
+        "animations/lateral-raise/007.png"
+      ],
+      "durations": [180, 150, 150, 200, 150, 150, 180],
+      "loop": false,
+      "repeat": 3,
+      "displayScale": 1.0564,
+      "displayOffsetY": 7
+    },
     "celebrate": {"frames": ["animations/actions/005.png", "animations/jump/002.png", "animations/actions/005.png", "animations/jump/006.png"], "durations": [180, 160, 180, 200], "loop": false},
     "sad": {"frames": ["animations/actions/006.png"], "durations": [900], "loop": false}
   },
-  "assetVersion": "0.4.1-ping-pong-walk-cycle",
+  "assetVersion": "0.6.0-standard-exercises",
   "reference": "reference/character-reference.jpg"
 }

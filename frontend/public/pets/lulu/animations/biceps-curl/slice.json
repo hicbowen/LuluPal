@@ -1,0 +1,25 @@
+{
+  "source": "frontend/public/pets/lulu/sheets/biceps-curl-green.png",
+  "layout": {
+    "columns": 4,
+    "rows": 2
+  },
+  "frames": 7,
+  "sourceOrder": [1, 2, 3, 4, 6, 7, 8],
+  "sequence": [
+    "arms-down",
+    "curl-20-degrees",
+    "curl-45-degrees",
+    "peak-at-lower-chest",
+    "lowering-from-chest",
+    "lowering-45-degrees",
+    "return-down"
+  ],
+  "normalization": {
+    "canvas": [560, 588],
+    "subjectHeight": 562,
+    "centerX": 280,
+    "topPadding": 13,
+    "bottomPadding": 13
+  }
+}

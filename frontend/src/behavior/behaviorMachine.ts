@@ -1,6 +1,7 @@
 export type PetState =
   | 'idle' | 'walk' | 'jump' | 'sleepEnter' | 'sleep' | 'wake' | 'speaking' | 'singing'
   | 'petting' | 'clicked' | 'dragged' | 'celebrate' | 'sad' | 'drink' | 'stretch'
+  | 'bicepsCurl' | 'lateralRaise'
   | 'reminding' | 'paused' | 'hidden'
 
 export type BehaviorEvent =
@@ -16,6 +17,7 @@ export type BehaviorEvent =
   | { type: 'SINGING_STOP' }
   | { type: 'DRINK' }
   | { type: 'STRETCH' }
+  | { type: 'EXERCISE' }
   | { type: 'REMINDER_START' }
   | { type: 'REMINDER_END' }
   | { type: 'COMPLETE' }
@@ -24,7 +26,8 @@ export type BehaviorEvent =
 const priority: Record<PetState, number> = {
   hidden: 100, paused: 95, singing: 90, reminding: 85, celebrate: 80, dragged: 70,
   wake: 65, petting: 60, clicked: 60, speaking: 50,
-  drink: 75, stretch: 75, jump: 40, walk: 30, sleepEnter: 20, sleep: 20, sad: 15, idle: 10,
+  drink: 75, stretch: 75, bicepsCurl: 75, lateralRaise: 75, jump: 40, walk: 30,
+  sleepEnter: 20, sleep: 20, sad: 15, idle: 10,
 }
 
 export function transition(current: PetState, event: BehaviorEvent): PetState {
@@ -36,6 +39,7 @@ export function transition(current: PetState, event: BehaviorEvent): PetState {
   if (current === 'singing') return current
   if (event.type === 'DRINK') return 'drink'
   if (event.type === 'STRETCH') return 'stretch'
+  if (event.type === 'EXERCISE') return 'bicepsCurl'
   if (current === 'reminding') {
     return event.type === 'REMINDER_END' ? 'idle' : current
   }
@@ -56,6 +60,7 @@ export function transition(current: PetState, event: BehaviorEvent): PetState {
   if (event.type === 'COMPLETE') {
     if (current === 'sleepEnter') return 'sleep'
     if (current === 'sleep') return 'wake'
+    if (current === 'bicepsCurl') return 'lateralRaise'
     return 'idle'
   }
   return current
@@ -82,6 +87,7 @@ export const defaultBehaviors: WeightedBehavior[] = [
   { state: 'idle', weight: 45 },
   { state: 'walk', weight: 25 },
   { state: 'jump', weight: 10 },
+  { state: 'bicepsCurl', weight: 8 },
   { state: 'sleepEnter', weight: 7 },
   { state: 'celebrate', weight: 3 },
 ]
@@ -99,4 +105,6 @@ export const behaviorDuration: Partial<Record<PetState, number>> = {
   sad: 2400,
   drink: 2200,
   stretch: 2400,
+  bicepsCurl: 4500,
+  lateralRaise: 4500,
 }
