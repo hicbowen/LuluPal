@@ -116,6 +116,24 @@ func TestWindowSizeForScale(t *testing.T) {
 	}
 }
 
+func TestLogicalWorkAreaNormalisesRetinaScreenFromWails(t *testing.T) {
+	screen := &application.Screen{
+		ScaleFactor: 2,
+		WorkArea: application.Rect{
+			X: 0, Y: 48, Width: 2880, Height: 1752,
+		},
+		PhysicalWorkArea: application.Rect{
+			X: 0, Y: 48, Width: 2880, Height: 1752,
+		},
+	}
+
+	got := logicalWorkArea(screen)
+	want := application.Rect{X: 0, Y: 24, Width: 1440, Height: 876}
+	if got != want {
+		t.Fatalf("logicalWorkArea() = %+v, want %+v", got, want)
+	}
+}
+
 func TestWindowSizeForBubbleContent(t *testing.T) {
 	tests := []struct {
 		mode          string

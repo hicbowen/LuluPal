@@ -54,7 +54,8 @@ func (c *MotionController) ConstrainNow() {
 	c.mu.Lock()
 	area, margin, scale := c.area, c.margin, c.scale
 	c.mu.Unlock()
-	minX, maxX, y := ActivityBounds(screen.WorkArea, bounds.Width, bounds.Height, area, margin, scale)
+	workArea := logicalWorkArea(screen)
+	minX, maxX, y := ActivityBounds(workArea, bounds.Width, bounds.Height, area, margin, scale)
 	if x < minX {
 		x = minX
 	}
@@ -141,7 +142,8 @@ func (c *MotionController) run(request MotionRequest, cancel <-chan struct{}, do
 			c.mu.Lock()
 			area, margin, scale := c.area, c.margin, c.scale
 			c.mu.Unlock()
-			minX, maxX, constrainedY := ActivityBounds(screen.WorkArea, bounds.Width, bounds.Height, area, margin, scale)
+			workArea := logicalWorkArea(screen)
+			minX, maxX, constrainedY := ActivityBounds(workArea, bounds.Width, bounds.Height, area, margin, scale)
 			nextX, nextDirection, turned := ConstrainHorizontalRange(positionX, direction, minX, maxX)
 			positionX, direction = nextX, nextDirection
 			if turned {
@@ -278,6 +280,27 @@ func JumpOffset(progress, height float64) float64 {
 
 func ConstrainHorizontal(x float64, direction string, workArea application.Rect, windowWidth int) (float64, string, bool) {
 	return ConstrainHorizontalRange(x, direction, workArea.X, workArea.X+workArea.Width-windowWidth)
+}
+
+// Wails alpha2.117 returns the direct macOS window screen in physical pixels,
+// even though window positions and sizes use logical points. Cached screens
+// are DPI-normalised, so use the screen manager conversion for this case.
+func logicalWorkArea(screen *application.Screen) application.Rect {
+	if screen != nil &&
+		screen.ScaleFactor != 1 &&
+		screen.WorkArea == screen.PhysicalWorkArea {
+		scale := float64(screen.ScaleFactor)
+		return application.Rect{
+			X:      int(math.Round(float64(screen.WorkArea.X) / scale)),
+			Y:      int(math.Round(float64(screen.WorkArea.Y) / scale)),
+			Width:  int(math.Round(float64(screen.WorkArea.Width) / scale)),
+			Height: int(math.Round(float64(screen.WorkArea.Height) / scale)),
+		}
+	}
+	if screen == nil {
+		return application.Rect{}
+	}
+	return screen.WorkArea
 }
 
 func ConstrainHorizontalRange(x float64, direction string, minX, maxX int) (float64, string, bool) {

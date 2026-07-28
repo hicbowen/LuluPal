@@ -59,14 +59,29 @@ func main() {
 		BackgroundType:   application.BackgroundTypeTransparent,
 		BackgroundColour: application.NewRGBA(0, 0, 0, 0),
 		InitialPosition:  application.WindowXY, X: current.Position.X, Y: current.Position.Y,
+		Mac: application.MacWindow{
+			Backdrop:      application.MacBackdropTransparent,
+			DisableShadow: true,
+			CollectionBehavior: application.MacWindowCollectionBehaviorCanJoinAllSpaces |
+				application.MacWindowCollectionBehaviorFullScreenAuxiliary |
+				application.MacWindowCollectionBehaviorIgnoresCycle,
+		},
 		Windows: application.WindowsWindow{
 			HiddenOnTaskbar:                   true,
 			DisableFramelessWindowDecorations: true,
 		},
 	})
-	service.SetMotionController(pet.NewMotionController(petWindow, func(name string, data any) {
+	motionController := pet.NewMotionController(petWindow, func(name string, data any) {
 		app.Event.Emit(name, data)
-	}))
+	})
+	service.SetMotionController(motionController)
+	// Windows are only backed by a native NSWindow once app.Run starts. The
+	// eager constraint above configures other platforms, while this hook makes
+	// the initial macOS placement effective after the WebView is ready.
+	petWindow.RegisterHook(events.Mac.WebViewDidFinishNavigation, func(*application.WindowEvent) {
+		motionController.ResizeForScale(store.Get().PetScale)
+		motionController.ConstrainNow()
+	})
 	settingsWindow := app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name: "settings", Title: "噜噜日 · 设置", Width: 920, Height: 680,
 		MinWidth: 760, MinHeight: 560, URL: "/?window=settings",
